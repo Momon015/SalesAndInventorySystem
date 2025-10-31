@@ -45,8 +45,8 @@ INSTALLED_APPS = [
     'Product.apps.ProductConfig',
     'Expense.apps.ExpenseConfig',
     'Sales.apps.SalesConfig',
-    'SaleItem.apps.SaleItemConfig',
-    'DailySummary.apps.DailySummaryConfig',
+    'SaleItem.apps.SaleitemConfig',
+    'DailySummary.apps.DailysummaryConfig',
 ]
 
 MIDDLEWARE = [

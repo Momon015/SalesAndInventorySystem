@@ -1,0 +1,10 @@
+<h2>Products</h2><br>
+<a href={% url 'product-create' %}>Create</a><br><br>
+
+{% for product in products %}
+
+{{product}}<br>
+
+<a href={% url 'product-update' product.slug %}>Update</a>
+<a href={% url 'product-delete' product.slug %}>Delete</a><br><br>
+{% endfor %}
