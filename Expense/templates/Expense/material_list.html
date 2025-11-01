@@ -1,0 +1,18 @@
+<h2>Materials</h2><br>
+
+{% if messages %}
+{% for message in messages %}
+{{message}}
+{% endfor%}
+{% endif %}
+
+
+<a href={% url 'material-create' %}>Create</a><br><br>
+
+{% for material in materials %}
+
+{{material.name}} - {{material.price}}<br>
+
+<a href={% url 'material-update' material.slug %}>Update</a>
+<a href={% url 'material-delete' material.slug %}>Delete</a><br><br>
+{% endfor %}
