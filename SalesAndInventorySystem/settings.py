@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'Sales.apps.SalesConfig',
     'SaleItem.apps.SaleitemConfig',
     'DailySummary.apps.DailysummaryConfig',
+    'core.apps.CoreConfig',
 ]
 
 MIDDLEWARE = [

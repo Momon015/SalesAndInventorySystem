@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 
-from Product.models import TimeStampModel, SlugModel, Category
+from core.models import TimeStampModel, SlugModel, Category
 
 # Create your models here.
 
