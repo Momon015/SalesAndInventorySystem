@@ -26,9 +26,6 @@ class Category(SlugModel):
             self.slug = slugify(self.name)
         return super().save(*args, **kwargs)
     
-    class Meta:
-        db_table = 'Product_category'
-
 class StatusModel(SlugModel, TimeStampModel):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
