@@ -212,7 +212,7 @@ def confirm_purchase_summary(request):
     subtotal = 0
     total_discount = 0
     
-    purchase = Purchase.objects.create(total_cost=0, status='pending')
+    purchase = Purchase.objects.create(total_cost=0)
     
     for material_id, data in cart.items():
         material = get_object_or_404(Material, id=material_id)
