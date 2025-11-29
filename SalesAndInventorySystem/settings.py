@@ -11,12 +11,86 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-import os
+import os, logging
 from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv()
+
+# logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+
+    'loggers': {
+        # Only logs your custom app (no SQL, no Django spam)
+        'Expense': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'Sales': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    }
+}
+
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False, # keep Django default loggers
+#     'formatters': {
+#         'verbose': {
+#             'format': '{levelname} {asctime} {module} {message}',
+#             'style': '{'
+#         },
+#         'simple': {
+#             'format': '{levelname} {message}',
+#             'style': '{'
+#         },
+#     },
+#     'handlers': {
+#         # Print logs to console
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'simple',
+#         },
+#         # Save logs to a file
+#         'file': {
+#             'class': 'logging.FileHandler',
+#             'filename': 'debug.log', # will create a file in your project root
+#             'formatter': 'verbose',
+#         },   
+#     },
+#     'loggers': {
+#         # Django default logger
+#         'django': {
+#             'handlers': ['console', 'file'],
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#         # Custom logger for your app
+#         'Expense': {
+#             'handlers': ['console', 'file'],
+#             'level': 'DEBUG',
+#         },
+#         'Sales': {
+#             'handlers': ['console', 'file'],
+#             'level': 'DEBUG',
+#         },
+#     },
+# }
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -48,6 +122,8 @@ INSTALLED_APPS = [
     'SaleItem.apps.SaleitemConfig',
     'DailySummary.apps.DailysummaryConfig',
     'core.apps.CoreConfig',
+    
+    'django.contrib.humanize', 
 ]
 
 MIDDLEWARE = [
@@ -117,7 +193,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Manila'
 
 USE_I18N = True
 

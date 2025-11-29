@@ -1,3 +1,6 @@
+{% extends 'main.html' %}
+{% block content %}
+
 <h2>Materials</h2><br>
 
 {% if messages %}
@@ -12,7 +15,14 @@
 {% for material in materials %}
 
 {{material.name}} - {{material.price}}<br>
+<a href={% url 'add-cart' material.id %}>Add Item</a>
 
 <a href={% url 'material-update' material.slug %}>Update</a>
 <a href={% url 'material-delete' material.slug %}>Delete</a><br><br>
+
 {% endfor %}
+<br><br>
+<a href="{% url 'view-cart' %}">View Cart</a>
+
+
+{% endblock content %}
