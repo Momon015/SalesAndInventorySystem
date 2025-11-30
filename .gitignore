@@ -30,3 +30,5 @@ media/
 # System files
 .DS_Store
 Thumbs.db
+
+testing_some_logic.py
