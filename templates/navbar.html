@@ -1,0 +1,78 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand fw-bold text-uppercase" href="#">
+      <i class="bi bi-box-seam me-2"></i>Sales & Inventory
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNavbar">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item mx-2">
+          <a class="nav-link active" href="#"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+        </li>
+        <li class="nav-item mx-2">
+          <a class="nav-link" href="#"><i class="bi bi-cash-coin me-1"></i>Sales</a>
+        </li>
+        <li class="nav-item mx-2">
+          <a class="nav-link" href="#"><i class="bi bi-wallet2 me-1"></i>Expense</a>
+        </li>
+        <li class="nav-item mx-2">
+          <a class="nav-link" href="#"><i class="bi bi-calendar-check me-1"></i>Daily Summary</a>
+        </li>
+        <li class="nav-item mx-2">
+          <a class="nav-link" href="{% url 'material-list' %}"><i class="bi bi-box me-1"></i>Product</a>
+        </li>
+        <li class="nav-item mx-2">
+          <a class="nav-link" href="{% url 'view-cart' %}"><i class="bi bi-basket me-1"></i>Item</a>
+        </li>
+        <li class="nav-item dropdown mx-2">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-person-circle me-1"></i>Account
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="#">Profile</a></li>
+            <li><a class="dropdown-item" href="#">Settings</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<style>
+  .navbar {
+    background: linear-gradient(90deg, #1e1e2f, #2c2c54);
+  }
+
+  .nav-link {
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .nav-link:hover {
+    color: #00d4ff !important;
+    transform: translateY(-1px);
+  }
+
+  .navbar-brand {
+    letter-spacing: 1px;
+  }
+
+  .dropdown-menu {
+    background-color: #2c2c54;
+    border: none;
+  }
+
+  .dropdown-item {
+    color: #e4e4e4;
+  }
+
+  .dropdown-item:hover {
+    background-color: #3b3b75;
+  }
+</style>
