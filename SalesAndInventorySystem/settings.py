@@ -122,8 +122,9 @@ INSTALLED_APPS = [
     'SaleItem.apps.SaleitemConfig',
     'DailySummary.apps.DailysummaryConfig',
     'Dashboard.apps.DashboardConfig',
-    'core.apps.CoreConfig',
+    'Inventory.apps.InventoryConfig',
     
+    'core.apps.CoreConfig',
     'django.contrib.humanize', 
 ]
 
