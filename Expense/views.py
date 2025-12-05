@@ -23,6 +23,8 @@ from Expense.forms import PurchaseForm, PurchaseItemForm
 from Inventory.models import Material
 from Inventory.forms import MaterialForm
 
+from core.models import StatusModel
+
 from decimal import Decimal
 
 # logging
@@ -162,7 +164,8 @@ def confirm_purchase_summary(request):
     subtotal = 0
     total_discount = 0
     
-    purchase = Purchase.objects.create(total_cost=0)
+    status, created = StatusModel.objects.get_or_create(name='paid') # cash payment directly so automatically paid
+    purchase = Purchase.objects.create(total_cost=0, status=status)
     
     for material_id, data in cart.items():
         material = get_object_or_404(Material, id=material_id)

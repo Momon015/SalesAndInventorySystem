@@ -34,7 +34,7 @@ class StatusModel(SlugModel, TimeStampModel):
         ('canceled', 'Canceled'),
     ]
     
-    name = models.CharField(max_length=50, choices=STATUS_CHOICES, unique=True)
+    name = models.CharField(max_length=50, choices=STATUS_CHOICES)
     
     
     def __str__(self):
