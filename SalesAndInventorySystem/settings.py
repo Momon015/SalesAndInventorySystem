@@ -124,7 +124,9 @@ INSTALLED_APPS = [
     'Dashboard.apps.DashboardConfig',
     'Inventory.apps.InventoryConfig',
     
+    'user.apps.UserConfig',
     'core.apps.CoreConfig',
+    
     'django.contrib.humanize', 
 ]
 
