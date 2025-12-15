@@ -17,9 +17,10 @@ class SlugModel(models.Model):
 
 class Category(SlugModel):
     name = models.CharField(max_length=100)
+    category_type = models.CharField(max_length=100, null=True, blank=True)
     
     def __str__(self):
-        return self.name
+        return f"Category: {self.category_type} - {self.name}"
     
     def save(self, *args, **kwargs):
         if not self.slug:

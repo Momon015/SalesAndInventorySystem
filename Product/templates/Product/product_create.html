@@ -1,0 +1,179 @@
+{% extends 'main.html' %}
+{% block content %}
+
+<script>
+function changeValue(fieldId, delta) {
+    const input = document.getElementById(fieldId);
+    let value = parseInt(input.value) || 0;
+    value += delta;
+    if (value < 0) value = 0;
+    input.value = value;
+}
+</script>
+
+<style>
+/* Remove default number spinners */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Inventory-style tweaks */
+.card-inventory {
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.card-inventory .card-header {
+    background: linear-gradient(135deg, #0d6efd, #198754);
+}
+
+.badge-status {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: .05rem;
+}
+
+.form-section-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6c757d;
+    margin-bottom: .25rem;
+}
+
+.helper-text {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+input[readonly] {
+    background-color: #f8f9fa;
+}
+</style>
+
+<div class="container py-4">
+    <!-- Page header / breadcrumbs -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-1">Add Product</h3>
+            <p class="text-muted mb-0">Create a new item for your sales and inventory catalog.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-light text-secondary border badge-status">
+                Inventory module
+            </span>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main form -->
+        <div class="col-lg-8 mb-3">
+            <div class="card shadow-sm card-inventory">
+                <div class="card-header text-white py-3 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-box-seam fs-4"></i>
+                        <span class="fw-semibold">Product details</span>
+                    </div>
+                    <span class="small text-white-50">Required fields are marked with *</span>
+                </div>
+
+                <div class="card-body p-4">
+                    <form method="POST" class="row g-3">
+                        {% csrf_token %}
+
+                        {% for field in form %}
+                            <div class="col-12{% if field.name in 'quantity stock reorder_level cost price' %} col-md-6{% endif %}">
+                                <label for="{{ field.id_for_label }}" class="form-label fw-medium">
+                                    {{ field.label }}
+                                    {% if field.field.required %}
+                                        <span class="text-danger">*</span>
+                                    {% endif %}
+                                </label>
+
+                                {% if field.field.widget.input_type == "number" %}
+                                    <div class="input-group">
+                                        <button type="button"
+                                                class="btn btn-outline-secondary"
+                                                onclick="changeValue('{{ field.id_for_label }}', -1)">
+                                            −
+                                        </button>
+                                        {{ field }}
+                                        <button type="button"
+                                                class="btn btn-outline-secondary"
+                                                onclick="changeValue('{{ field.id_for_label }}', 1)">
+                                            +
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    {{ field }}
+                                {% endif %}
+
+                                {% if field.help_text %}
+                                    <div class="helper-text mt-1">
+                                        {{ field.help_text }}
+                                    </div>
+                                {% endif %}
+
+                                {% if field.errors %}
+                                    <div class="text-danger mt-1 small">
+                                        {{ field.errors|striptags }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <!-- Actions -->
+                        <div class="col-12 d-flex justify-content-between align-items-center pt-3 border-top mt-2">
+                            <div class="text-muted small">
+                                Data will automatically reflect in stock and sales reports.
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'product-list' %}"
+                                   class="btn btn-outline-secondary px-3 rounded-3">
+                                    Cancel
+                                </a>
+                                <button type="submit"
+                                        class="btn btn-primary px-4 rounded-3">
+                                    <i class="bi bi-save me-1"></i>
+                                    Save product
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Side summary / inventory hints -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="form-section-title">Stock guidance</div>
+                    <p class="helper-text mb-2">
+                        Use realistic quantities and reorder levels to keep stock balanced and avoid stockouts.
+                    </p>
+                    <ul class="helper-text ps-3 mb-0">
+                        <li>Set a reorder level below your usual quantity on hand.</li>
+                        <li>Use cost and selling price consistently for margin reports.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="form-section-title">Tips</div>
+                    <p class="helper-text mb-0">
+                        Group similar products under the same category and use clear, searchable names.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
