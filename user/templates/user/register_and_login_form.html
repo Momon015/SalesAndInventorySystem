@@ -1,0 +1,190 @@
+{% extends 'main.html' %}
+{% block content %}
+
+{% if messages %}
+<div class="toast-container" aria-live="polite" aria-atomic="true">
+  {% for message in messages %}
+    <div class="toast-message toast-{{ message.tags }}">
+      {% if message.tags == "error" %}
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+      {% elif message.tags == "success" %}
+        <i class="bi bi-check-circle-fill me-2"></i>
+      {% elif message.tags == "info" %}
+        <i class="bi bi-info-circle-fill me-2"></i>
+      {% elif message.tags == "warning" %}
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {% endif %}
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<style>
+.toast-container {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 1055;
+}
+.toast-message {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  animation: slideInFade 0.4s ease forwards;
+  background: #dc3545;
+  color: #fff;
+}
+.toast-success { background: #198754; }
+.toast-info { background: #0dcaf0; color: #000; }
+@keyframes slideInFade { from {opacity:0; transform:translateX(20px);} to {opacity:1; transform:translateX(0);} }
+.toast-message.hide { animation: fadeOutToast 0.4s ease forwards; }
+@keyframes fadeOutToast { to {opacity:0; transform:translateX(20px);} }
+@keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+.login-card, .register-card { animation: fadeInUp 0.6s ease forwards; }
+.btn-primary:hover { transform: translateY(-2px); transition: transform 0.2s ease; }
+</style>
+
+<script>
+  // Auto-hide toast messages
+  setTimeout(() => {
+    document.querySelectorAll('.toast-message').forEach(toast => {
+      toast.classList.add('hide');
+      setTimeout(() => toast.remove(), 400);
+    });
+  }, 3000);
+
+  // Password toggle for all password fields
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.toggle-password-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const targetId = this.dataset.target;
+        const input = document.getElementById(targetId);
+        if (!input) return;
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        const icon = this.querySelector('i');
+        if (icon) icon.classList.toggle('bi-eye'), icon.classList.toggle('bi-eye-slash');
+        this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+      });
+    });
+  });
+</script>
+
+{% if page == 'login' %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+      <div class="card shadow-sm border-0 rounded-4 login-card">
+        <div class="card-body p-4 text-center">
+          <div class="mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary"
+                 style="width: 3rem; height: 3rem;">
+              <i class="bi bi-box-seam fs-4"></i>
+            </div>
+            <h5 class="mt-2 mb-1 fw-semibold">Sign in to your account</h5>
+            <p class="text-muted small mb-0">Access your products, inventory, and sales dashboard.</p>
+          </div>
+          <form method="POST" autocomplete="off">
+            {% csrf_token %}
+            <div class="mb-3 text-start">
+              <label for="username" class="form-label fw-medium">Username</label>
+              <input type="text" name="username" id="username" class="form-control" placeholder="Enter username" required>
+            </div>
+            <div class="mb-3 text-start">
+              <label for="password" class="form-label fw-medium">Password</label>
+              <div class="input-group">
+                <input type="password" name="password" id="password" class="form-control" placeholder="Enter password" required>
+                <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="password" aria-label="Show password">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary rounded-3">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Login
+              </button>
+            </div>
+          </form>
+        </div>
+        <div class="card-footer bg-light border-0 text-center py-3">
+          <small class="text-muted">
+            Don’t have an account? <a href="{% url 'register-form' %}" class="fw-semibold text-decoration-none">Register</a>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% elif page == 'register-form' %}
+<div class="container py-5 d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div class="card shadow-sm border-0 rounded-4 register-card" style="max-width: 400px; width: 100%;">
+    
+    <!-- Header -->
+    <div class="card-header bg-primary text-white text-center py-3 rounded-top-4">
+      <div class="d-flex justify-content-center align-items-center gap-2">
+        <i class="bi bi-person-plus fs-4"></i>
+        <span class="fw-semibold fs-5">Create Account</span>
+      </div>
+    </div>
+
+    <div class="card-body px-4 py-3">
+      <p class="text-center text-muted small mb-3">
+        Register to manage products, track inventory, and monitor sales.
+      </p>
+
+      <form method="POST" novalidate autocomplete="off">
+        {% csrf_token %}
+
+        {% for field in form %}
+          <div class="mb-2">
+            <label for="{{ field.id_for_label }}" class="form-label fw-medium small">
+              {{ field.label }} {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+            </label>
+
+            {% if field.field.widget.input_type == "password" %}
+              <div class="input-group">
+                {{ field }}
+                <button type="button" class="btn btn-outline-secondary toggle-password-btn" data-target="{{ field.id_for_label }}">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            {% else %}
+              {{ field }}
+            {% endif %}
+
+            {% if field.help_text %}
+              <div class="form-text text-muted small">{{ field.help_text }}</div>
+            {% endif %}
+
+            {% if field.errors %}
+              <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger small mt-2">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary w-100 rounded-3 mt-3">
+          <i class="bi bi-person-plus me-1"></i> Register
+        </button>
+      </form>
+    </div>
+
+    <div class="card-footer text-center py-2 bg-light border-0">
+      <small class="text-muted">
+        Already have an account? <a href="{% url 'login' %}" class="fw-semibold text-decoration-none">Log in</a>
+      </small>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock content %}

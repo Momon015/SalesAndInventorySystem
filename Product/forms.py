@@ -20,7 +20,7 @@ class ProductForm(ModelForm):
         def category_label(obj):
             return obj.name.title()
         
-        # self.fields['name'].
+
         self.fields['category'].queryset = Category.objects.filter(category_type='product')
         self.fields['category'].empty_label = None
         self.fields['category'].label_from_instance = category_label # or lambda obj: obj.name.title()

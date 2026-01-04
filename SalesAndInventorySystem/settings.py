@@ -130,6 +130,8 @@ INSTALLED_APPS = [
     'django.contrib.humanize', 
 ]
 
+AUTH_USER_MODEL = 'user.User'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

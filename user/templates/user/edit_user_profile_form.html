@@ -1,0 +1,143 @@
+{% extends 'main.html' %}
+{% block content %}
+
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-9">
+
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+        <!-- Header -->
+          <div class="bg-light border-bottom px-4 py-3 d-flex justify-content-between align-items-center">
+            <div>
+              {% if page == 'user-edit-profile' %}
+                <h5 class="mb-1 fw-semibold d-flex align-items-center gap-2">
+                  <i class="bi bi-person-gear text-primary fs-5"></i>
+                  Edit Profile
+                </h5>
+                <small class="text-muted">
+                  Manage your account details and system access information.
+                </small>
+              {% elif page == 'user-edit-password' %}
+                <h5 class="mb-1 fw-semibold d-flex align-items-center gap-2">
+                  <i class="bi bi-lock-fill text-primary fs-5"></i>
+                  Change Password
+                </h5>
+                <small class="text-muted">
+                  Update your account password.
+                </small>
+              {% endif %}
+            </div>
+
+            {% if page == 'user-edit-profile' %}
+              <div class="d-flex gap-2">
+                <a href="{% url 'user-edit-password' %}" class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-lock-fill me-1"></i> Edit Password
+                </a>
+
+                <a href="#" class="btn btn-outline-warning btn-sm" title="Coming soon">
+                  <i class="bi bi-key-fill me-1"></i> Reset Password
+                </a>
+              </div>
+            {% endif %}
+          </div>
+
+
+        <!-- Body -->
+        <div class="card-body p-4">
+
+          {% if page == 'user-edit-profile' %}
+          <form method="POST" autocomplete="off" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <h6 class="fw-semibold text-secondary mb-1">Personal Information</h6>
+              <hr class="mt-1 mb-3">
+            </div>
+
+            <div class="row g-3">
+              {% for field in form %}
+                <div class="col-md-6">
+                  <label for="{{ field.id_for_label }}" class="form-label small fw-medium">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+                  {{ field }}
+                  {% if field.errors %}
+                    <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-4">
+              <a href="{% url 'user-profile' request.user.slug %}" class="btn btn-outline-secondary px-4">Cancel</a>
+              <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+            </div>
+          </form>
+
+          {% elif page == 'user-edit-password' %}
+          <form method="POST" autocomplete="off" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <h6 class="fw-semibold text-secondary mb-1">Change Password</h6>
+              <hr class="mt-1 mb-3">
+            </div>
+
+            <div class="row g-3">
+              {% for field in form %}
+                <div class="col-md-12 mb-3">
+                  <label for="{{ field.id_for_label }}" class="form-label small fw-medium">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+
+                  {% if field.name == "old_password" or field.name == "new_password1" or field.name == "new_password2" %}
+                    <div class="input-group">
+                      {{ field }}
+                      <button type="button" class="btn btn-outline-secondary" onclick="togglePassword(this)">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    </div>
+                  {% else %}
+                    {{ field }}
+                  {% endif %}
+
+                  {% if field.errors %}
+                    <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-4">
+              <a href="{% url 'user-edit-profile' request.user.slug %}" class="btn btn-outline-secondary px-4">Back</a>
+              <button type="submit" class="btn btn-primary px-4">Update Password</button>
+            </div>
+          </form>
+          {% endif %}
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Show/Hide Password Script -->
+<script>
+function togglePassword(button) {
+  const input = button.previousElementSibling;
+  if (input.type === "password") {
+    input.type = "text";
+    button.innerHTML = '<i class="bi bi-eye-slash"></i>';
+  } else {
+    input.type = "password";
+    button.innerHTML = '<i class="bi bi-eye"></i>';
+  }
+}
+</script>
+
+{% endblock %}
