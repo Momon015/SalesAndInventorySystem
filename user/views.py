@@ -20,36 +20,154 @@ from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
 
 from core.models import Category
+from core.utils.email import send_email
 
-from user.models import User
+from user.models import User, EmailOTP
 from user.forms import RegisterForm, UpdateUserForm, StyledPasswordChangeForm
 
+import json 
+import pprint
+
+from django.db import transaction
+from django.contrib.auth.hashers import make_password
 # Create your views here.
 
 def register_form(request):
     page = 'register-form'
+    
     if request.method == 'POST':
-        form = RegisterForm(request.POST)
+        # MANAGER: CLEANING UNVERIFIED USERS
+        User.delete_user.unverified_users(minutes=5) # override the 1 hr 
         
+        form = RegisterForm(request.POST)
+
         if form.is_valid():
-            user = form.save(commit=False)
+ 
+            username = form.cleaned_data['username'].lower()
+            email = form.cleaned_data['email']
+            raw_password = form.cleaned_data['password1']
             
-            user.username = user.username.lower()
-            user.first_name = user.first_name.title()
-            user.last_name = user.last_name.title()
-            raw_password = form.cleaned_data.get('password1')
+            user = User.objects.create(username=username, is_active=False)
             user.set_password(raw_password)
+            user.email = email
             user.save()
-            login(request, user)
-            return redirect('product-list')
-        else:
-            print('form errors:', form.errors)
+            
+            # save user ID
+            request.session['user_id'] = user.id
+            
+            # generate OTP
+            otp = EmailOTP.generate_otp()
+            
+            # save otp_obj in DB
+            otp_obj = EmailOTP.objects.create(user=user, otp=otp)
+            request.session['otp_id'] = otp_obj.id
+            
+            # send email
+            send_email(user.email, otp)
+            
+            messages.success(request, f"The OTP has been sent to your email.")
+            return redirect('verify-otp')
+
     else:
-        form = RegisterForm()
+        form = RegisterForm()   
 
     context = {'form': form, 'page': page}
     return render(request, 'user/register_and_login_form.html', context)
 
+def verify_otp(request):
+    user_id = request.session.get('user_id', None)
+    otp_id = request.session.get('otp_id', None)
+    
+    if not user_id or not otp_id:
+        messages.error(request, f"Please register again.")
+        return redirect('register-form')
+    
+    user = get_object_or_404(User, id=user_id)
+    
+    try:
+        otp_obj = EmailOTP.objects.get(id=otp_id, user=user)
+    except EmailOTP.DoesNotExist:
+        messages.error(request, "OTP is no longer valid.")
+        request.session.pop('otp_id', None)
+        return redirect('expired-otp')
+    
+    print('otp_obj', otp_obj)
+
+    if request.method == 'POST':
+        entered_otp = request.POST.get('otp', None)
+        
+        if otp_obj.is_expired():
+            request.session.pop('otp_id', None)
+            otp_obj.delete()
+            messages.error(request, f"The OTP has been expired. Please request for a new OTP.")
+            return redirect('expired-otp')
+        else:
+
+            if entered_otp == otp_obj.otp:
+                try:
+                    user = User.objects.get(id=user_id)
+                except User.DoesNotExist:
+                    messages.error(request, f"Please register again.")
+                    return redirect('register-form')
+                
+                # save is_active manually
+                user.is_active=True
+                user.save()
+                
+                otp_obj.is_verified=True
+                otp_obj.save()
+                
+                # clear sessions
+                for key in ('user_id', 'otp_id'):
+                    request.session.pop(key, None)
+                
+                login(request, user)
+                messages.success(request, f"Your account has been successfully created.")
+                return redirect('user-profile', slug=user.username)
+            
+            else:
+                messages.error(request, "Invalid OTP. Please try again.")
+ 
+            
+    return render(request, 'user/verify_otp.html')
+
+def resend_otp(request):
+    user_id = request.session.get('user_id', None)
+    
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        messages.error(request, f"Please register again.")
+        return redirect('register-form')
+    
+    if user.is_active:
+        messages.error(request, f"Your account is already verified")
+        return redirect('login')
+    
+    last_otp_sent = EmailOTP.objects.filter(user=user, is_verified=False).first()
+    
+    if last_otp_sent and not last_otp_sent.is_expired():
+        messages.warning(request, f"Your OTP is still valid. Please check your email.")
+        return render(request, 'user/verify_otp.html')
+    
+    if last_otp_sent and last_otp_sent.is_expired:
+        last_otp_sent.delete()
+    
+    # generate new OTP
+    otp = EmailOTP.generate_otp()
+    print('otp', otp)
+    otp_obj = EmailOTP.objects.create(otp=otp, user=user)
+    request.session['otp_id'] = otp_obj.id
+    
+    send_email(user.email, otp)
+
+    messages.success(request, f"The new OTP has been sent to your email.")
+    return redirect('verify-otp')
+
+def verify_otp_expired(request):
+    
+    return render(request, 'user/verify_otp_expired.html')
+    
 def user_login(request):
     user = None
     page = 'login'

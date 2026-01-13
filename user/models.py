@@ -3,14 +3,20 @@ from django.db import models
 from django.utils.text import slugify
 from django.contrib.auth.models import AbstractUser
 
-from core.models import SlugModel
+from core.models import SlugModel, TimeStampModel
 from datetime import date, timedelta
 
 from django.utils import timezone
 
 from django.core.validators import RegexValidator
+import random
 
 # Create your models here.
+
+class DeleteUnverifiedUser(models.Manager):
+    def unverified_users(self, minutes=60):
+        cutoff = timezone.now() - timedelta(minutes=minutes)
+        return self.filter(is_active=False, date_joined__lt=cutoff).delete()
 
 phone_validators = RegexValidator(
     regex=r'^0\d{10}$',
@@ -30,7 +36,10 @@ ROLE_CHOICES = [
     ]
 
 class User(AbstractUser, SlugModel):
-
+    
+    # custom Model Manager for deleting unverified users
+    delete_user = DeleteUnverifiedUser()
+    
     name = models.CharField(max_length=255)
     email = models.EmailField(null=True, blank=True)
     role = models.CharField(max_length=100, choices=ROLE_CHOICES, null=True, blank=True)
@@ -41,7 +50,7 @@ class User(AbstractUser, SlugModel):
     password_changed_at = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
-        return self.name
+        return self.username
     
     def is_locked(self):
         if self.locked_until:
@@ -75,7 +84,9 @@ class User(AbstractUser, SlugModel):
     
     @property
     def full_name(self):
-        return f"{self.first_name} {self.last_name}"
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        return f"—"
     
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -86,4 +97,30 @@ class User(AbstractUser, SlugModel):
         
         super().save(*args, **kwargs)
         
+class EmailOTP(TimeStampModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_otps', null=True, blank=True)
+    otp = models.CharField(max_length=6)
+    is_verified = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"To: {self.user} - OTP Code: {self.otp} "
+    
+    def is_expired(self):
+        expires_at = self.created_at + timedelta(minutes=5)
+        if self.otp:
+            return timezone.now() > expires_at
+        return False
+    
+    @classmethod
+    def generate_otp(cls):
+        return str(random.randint(0, 999999)).zfill(6)
+    
+
+        
+        
+        
+        
+            
+    
+    
 

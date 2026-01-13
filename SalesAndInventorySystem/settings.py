@@ -19,6 +19,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv()
 
+# OTP
+
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
+EMAIL_HOST = os.getenv('EMAIL_HOST')   # example using Gmail
+EMAIL_PORT = int(os.getenv('EMAIL_PORT'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
+
 # logging
 
 logging.basicConfig(level=logging.DEBUG)

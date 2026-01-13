@@ -1,0 +1,149 @@
+{% extends 'main.html' %}
+{% block content %}
+
+{% if messages %}
+<div class="toast-container" aria-live="polite" aria-atomic="true">
+  {% for message in messages %}
+    <div class="toast-message toast-{{ message.tags }}">
+      {% if message.tags == "error" %}
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+      {% elif message.tags == "success" %}
+        <i class="bi bi-check-circle-fill me-2"></i>
+      {% elif message.tags == "info" %}
+        <i class="bi bi-info-circle-fill me-2"></i>
+      {% elif message.tags == "warning" %}
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {% endif %}
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<style>
+.toast-container {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 1055;
+}
+
+.toast-message {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  animation: slideInFade 0.4s ease forwards;
+  background: #dc3545;
+  color: #fff;
+}
+
+.toast-success { background: #198754; }
+.toast-info { background: #0dcaf0; color: #000; }
+
+@keyframes slideInFade {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.toast-message.hide {
+  animation: fadeOutToast 0.4s ease forwards;
+}
+
+@keyframes fadeOutToast {
+  to { opacity: 0; transform: translateX(20px); }
+}
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.otp-card {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.otp-input {
+  letter-spacing: 0.4rem;
+  font-size: 1.25rem;
+  text-align: center;
+}
+</style>
+
+<script>
+setTimeout(() => {
+  document.querySelectorAll('.toast-message').forEach(toast => {
+    toast.classList.add('hide');
+    setTimeout(() => toast.remove(), 400);
+  });
+}, 3000);
+</script>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+      <div class="card shadow-sm border-0 rounded-4 otp-card">
+        
+        <!-- Header -->
+        <div class="card-body p-4 text-center">
+          <div class="mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary"
+                 style="width: 3rem; height: 3rem;">
+              <i class="bi bi-shield-lock fs-4"></i>
+            </div>
+
+            <h5 class="mt-3 mb-1 fw-semibold">Verify OTP</h5>
+            <p class="text-muted small mb-0">
+              Enter the 6-digit code sent to your email.
+            </p>
+          </div>
+
+          <!-- OTP Form -->
+          <form method="POST" autocomplete="off">
+            {% csrf_token %}
+
+            <div class="mb-3 text-start">
+              <label for="otp" class="form-label fw-medium">One-Time Password</label>
+              <input
+                type="text"
+                name="otp"
+                id="otp"
+                class="form-control otp-input"
+                placeholder="••••••"
+                maxlength="6"
+                inputmode="numeric"
+                pattern="[0-9]{6}"
+                autocomplete="one-time-code"
+                required
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+              >
+            </div>
+
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary rounded-3">
+                <i class="bi bi-check-circle me-1"></i> Verify OTP
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer bg-light border-0 text-center py-3">
+          <small class="text-muted">
+            Didn’t receive the code?
+            <a href="{% url 'resend-otp' %}" name='action' value='resend' class="fw-semibold text-decoration-none">
+              Resend OTP
+            </a>
+          </small>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
