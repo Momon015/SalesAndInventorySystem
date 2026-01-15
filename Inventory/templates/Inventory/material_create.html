@@ -1,14 +1,150 @@
-{% extends 'main.html' %}
+{% extends "main.html" %}
 {% block content %}
 
-Create
+<div class="container-fluid py-3 py-lg-4">
 
-<form method='POST'>
-    {% csrf_token %}
+  <div class="row g-3 g-lg-4">
 
-    {{form.as_p}}<br>
+    <!-- LEFT: CREATE FORM -->
+    <div class="col-lg-8 col-xl-9">
+      <div class="card border-0 shadow-sm rounded-4">
 
-    <button type='submit'>Create</button>
-</form>
+        <div class="card-header bg-white border-bottom px-3 px-lg-4 py-2 py-lg-3">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <h5 class="mb-1 fw-semibold d-flex align-items-center gap-2">
+                <i class="bi bi-box-seam text-primary"></i>
+                New Material
+              </h5>
+              <small class="text-muted">
+                Add a material that will be used for stock tracking and costing.
+              </small>
+            </div>
+            <a href="{% url 'material-list' %}" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i>
+              Back to list
+            </a>
+          </div>
+        </div>
 
-{% endblock content %}
+        <div class="card-body px-3 px-lg-4 py-3">
+
+          <form method="POST" autocomplete="off" novalidate>
+            {% csrf_token %}
+
+            <div class="row g-3">
+              {% for field in form %}
+                <div class="col-md-6">
+                  <label for="{{ field.id_for_label }}" class="form-label fw-medium small text-uppercase">
+                    {{ field.label }}
+                    {% if field.field.required %}
+                      <span class="text-danger">*</span>
+                    {% endif %}
+                  </label>
+
+                  {{ field }}
+
+                  {% if field.help_text %}
+                    <div class="form-text small">
+                      {{ field.help_text }}
+                    </div>
+                  {% endif %}
+
+                  {% if field.errors %}
+                    <div class="text-danger small mt-1">
+                      {{ field.errors|striptags }}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="d-flex justify-content-end border-top pt-3 mt-4 gap-2">
+              <a href="{% url 'material-list' %}" class="btn btn-outline-secondary px-4">
+                <i class="bi bi-x-circle me-1"></i>
+                Cancel
+              </a>
+              <button type="submit" class="btn btn-primary px-4">
+                <i class="bi bi-check-circle me-1"></i>
+                Save Material
+              </button>
+            </div>
+          </form>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: POS-STYLE GUIDELINES PANEL -->
+    <div class="col-lg-4 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+
+        <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 py-lg-3">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-info-circle"></i>
+            <h6 class="mb-0 fw-semibold">Material Setup Guide</h6>
+          </div>
+        </div>
+
+        <div class="card-body px-3 px-lg-4 py-3 small d-flex flex-column gap-3 text-muted">
+
+          <!-- Quick checklist -->
+          <div class="border rounded-3 p-2 bg-body-tertiary">
+            <div class="text-uppercase small mb-2">Checklist</div>
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2">
+                <i class="bi bi-check-circle text-success me-1"></i>
+                Use clear, descriptive names that staff can recognize quickly.
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-check-circle text-success me-1"></i>
+                Set the correct unit (pcs, kg, liters, etc.) before you start using this material.
+              </li>
+              <li class="mb-0">
+                <i class="bi bi-check-circle text-success me-1"></i>
+                Enter realistic starting quantity and price to keep costing accurate.
+              </li>
+            </ul>
+          </div>
+
+          <!-- Inventory behavior -->
+          <div class="border rounded-3 p-2">
+            <div class="text-uppercase small mb-2">Inventory behavior</div>
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2">
+                <i class="bi bi-info-circle me-1"></i>
+                This material will be included in stock counts and valuation reports.
+              </li>
+              <li class="mb-0">
+                <i class="bi bi-info-circle me-1"></i>
+                Quantity will update automatically when used in production or sales (if linked).
+              </li>
+            </ul>
+          </div>
+
+          <!-- Tip box -->
+          <div class="alert alert-light border-0 mb-0">
+            <div class="d-flex">
+              <div class="me-2">
+                <i class="bi bi-lightbulb text-warning"></i>
+              </div>
+              <div>
+                <div class="fw-semibold small">Tip</div>
+                <div class="small">
+                  Group similar materials with consistent naming (e.g. “Sugar - Brown 1kg”) to make searching and reporting easier.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

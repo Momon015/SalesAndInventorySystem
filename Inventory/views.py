@@ -18,13 +18,48 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth import update_session_auth_hash
 
 from Inventory.models import Material
-from Inventory.forms import MaterialForm
+from Inventory.forms import MaterialForm, MaterialFilterForm
+
+from django.db.models import Q
 
 # Create your views here.
 
 def material_list(request):
-    materials = Material.objects.filter()
     
+    """FIX the dropdown issue"""
+    form = MaterialFilterForm(request.GET or None)
+    materials = Material.objects.all()
+
+    stock_filter = request.GET.get('stock')
+    
+    if form.is_valid():
+        search = form.cleaned_data.get('search')
+        category = request.GET.get('category')
+        
+        if search:
+            materials = materials.filter(
+                Q(name__icontains=search) |
+                    Q(price__icontains=search) |
+                    Q(quantity__icontains=search) |
+                    Q(category__name__icontains=search)
+            )
+        if category:
+            materials = materials.filter(category=category)
+            
+        if stock_filter == 'high':
+            materials = materials.filter(quantity__gte=50)
+            
+        elif stock_filter == 'low':
+            materials = materials.filter(
+                Q(quantity__gte=1) & Q(quantity__lte=25)
+            )
+        
+        elif stock_filter == 'none':
+            materials = materials.filter(quantity=0)
+    else:
+        print('form errors', form.errors)
+           
+
     context = {'materials': materials}
     return render(request, 'Inventory/material_list.html', context)
 

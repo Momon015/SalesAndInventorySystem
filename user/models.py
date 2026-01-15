@@ -1,7 +1,7 @@
 from django.db import models
 
 from django.utils.text import slugify
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 
 from core.models import SlugModel, TimeStampModel
 from datetime import date, timedelta
@@ -13,10 +13,10 @@ import random
 
 # Create your models here.
 
-class DeleteUnverifiedUser(models.Manager):
+class DeleteUnverifiedUserManager(models.Manager):
     def unverified_users(self, minutes=60):
         cutoff = timezone.now() - timedelta(minutes=minutes)
-        return self.filter(is_active=False, date_joined__lt=cutoff).delete()
+        return self.filter(is_active=False, date_joined__lt=cutoff)
 
 phone_validators = RegexValidator(
     regex=r'^0\d{10}$',
@@ -36,9 +36,12 @@ ROLE_CHOICES = [
     ]
 
 class User(AbstractUser, SlugModel):
-    
+    """
+    I override accidentally the UserManager() so I need to manually assign to objects
+    """
+    objects = UserManager()
     # custom Model Manager for deleting unverified users
-    delete_user = DeleteUnverifiedUser()
+    cleanup = DeleteUnverifiedUserManager()
     
     name = models.CharField(max_length=255)
     email = models.EmailField(null=True, blank=True)

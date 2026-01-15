@@ -1,14 +1,170 @@
-{% extends 'main.html' %}
+{% extends "main.html" %}
 {% block content %}
 
-Delete<br><br>
+<div class="container-fluid py-3 py-lg-4">
 
-<form method='POST'>
-    {% csrf_token %}
+  <div class="row g-3 g-lg-4">
 
-    Material: {{material.name}} - {{material.price}}<br>
+    <!-- LEFT: DELETE CONFIRMATION -->
+    <div class="col-lg-8 col-xl-9">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
 
-    <button type='submit'>Delete</button>
-</form>
+        <div class="card-header bg-white border-bottom px-3 px-lg-4 py-2 py-lg-3">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <h5 class="mb-1 fw-semibold d-flex align-items-center gap-2 text-danger">
+                <i class="bi bi-trash"></i>
+                Delete Material
+              </h5>
+              <small class="text-muted">
+                You are about to permanently remove <strong>{{ material.name }}</strong> from inventory.
+              </small>
+            </div>
+            <a href="{% url 'material-list' %}" class="btn btn-sm btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i>
+              Back to list
+            </a>
+          </div>
+        </div>
 
-{% endblock content %}
+        <div class="card-body px-3 px-lg-4 py-3">
+
+          <!-- Material snapshot -->
+          <div class="border rounded-3 p-3 mb-3 bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <div class="small text-muted text-uppercase">Material</div>
+                <div class="fw-semibold">
+                  {{ material.name }}
+                </div>
+              </div>
+              <span class="badge bg-secondary-subtle text-secondary">
+                ID: {{ material.id }}
+              </span>
+            </div>
+            <div class="row small">
+              <div class="col-6 mb-1">
+                <span class="text-muted text-uppercase d-block">Current stock</span>
+                <span class="fw-semibold">
+                  {{ material.quantity }} units
+                </span>
+              </div>
+              <div class="col-6 mb-1">
+                <span class="text-muted text-uppercase d-block">Unit price</span>
+                <span class="fw-semibold">
+                  ₱{{ material.price }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-danger small mb-3">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            This action is permanent. Any future transactions will no longer be able to use this material.
+          </p>
+
+          <form method="POST">
+            {% csrf_token %}
+
+            <!-- Optional: extra confirmation (you can remove if not needed) -->
+            <div class="mb-3 small">
+              <label class="form-label fw-medium">
+                Type the material name to confirm deletion:
+              </label>
+              <input type="text"
+                     name="confirm_name"
+                     class="form-control form-control-sm"
+                     placeholder="{{ material.name }}">
+              {% if form and form.confirm_name.errors %}
+                <div class="text-danger small mt-1">
+                  {{ form.confirm_name.errors|striptags }}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+              <a href="{% url 'material-list' %}" class="btn btn-outline-secondary px-4">
+                <i class="bi bi-x-circle me-1"></i>
+                Cancel
+              </a>
+              <button type="submit" class="btn btn-danger px-4">
+                <i class="bi bi-trash me-1"></i>
+                Confirm Delete
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: DANGER / INFO PANEL -->
+    <div class="col-lg-4 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+
+        <div class="card-header bg-danger text-white px-3 px-lg-4 py-2 py-lg-3">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-shield-exclamation"></i>
+            <h6 class="mb-0 fw-semibold">Before you delete</h6>
+          </div>
+        </div>
+
+        <div class="card-body px-3 px-lg-4 py-3 small d-flex flex-column gap-3 text-muted">
+
+          <div class="border rounded-3 p-2 bg-body-tertiary">
+            <div class="text-muted text-uppercase small mb-2">Checklist</div>
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2">
+                <i class="bi bi-check-circle text-success me-1"></i>
+                Confirm this material is no longer used in any current products or recipes.
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-check-circle text-success me-1"></i>
+                Ensure all pending stock adjustments for this material are completed.
+              </li>
+              <li class="mb-0">
+                <i class="bi bi-check-circle text-success me-1"></i>
+                If unsure, consider disabling or archiving instead of deleting.
+              </li>
+            </ul>
+          </div>
+
+          <div class="border rounded-3 p-2">
+            <div class="text-muted text-uppercase small mb-2">Impact</div>
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2">
+                <i class="bi bi-exclamation-circle text-danger me-1"></i>
+                This material will disappear from inventory and item selection screens.
+              </li>
+              <li class="mb-0">
+                <i class="bi bi-exclamation-circle text-danger me-1"></i>
+                Historical records may still reference this material name, but it cannot be reused.
+              </li>
+            </ul>
+          </div>
+
+          <div class="alert alert-light border-0 mb-0">
+            <div class="d-flex">
+              <div class="me-2">
+                <i class="bi bi-lightbulb text-warning"></i>
+              </div>
+              <div>
+                <div class="fw-semibold small">Suggestion</div>
+                <div class="small">
+                  If you only want to stop using this material, consider adding an “inactive” status field instead of deleting it.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

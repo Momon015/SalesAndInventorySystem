@@ -37,7 +37,7 @@ def register_form(request):
     
     if request.method == 'POST':
         # MANAGER: CLEANING UNVERIFIED USERS
-        User.delete_user.unverified_users(minutes=5) # override the 1 hr 
+        User.cleanup.unverified_users(minutes=5) # override the 1 hr 
         
         form = RegisterForm(request.POST)
 
