@@ -26,11 +26,17 @@ from django.db.models import Q
 
 def material_list(request):
     
-    """FIX the dropdown issue"""
     form = MaterialFilterForm(request.GET or None)
     materials = Material.objects.all()
 
     stock_filter = request.GET.get('stock')
+    
+    """
+    this allows to filter things without 
+    causing any bugs like not showing anything 
+    in template to ensure this always work
+    """
+    categories = form.fields['category'].queryset 
     
     if form.is_valid():
         search = form.cleaned_data.get('search')
@@ -60,7 +66,7 @@ def material_list(request):
         print('form errors', form.errors)
            
 
-    context = {'materials': materials}
+    context = {'materials': materials, 'categories': categories}
     return render(request, 'Inventory/material_list.html', context)
 
 def material_create(request):

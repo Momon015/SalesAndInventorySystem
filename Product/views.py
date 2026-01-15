@@ -30,13 +30,22 @@ def product_list(request):
     form = ProductFilterForm(request.GET or None)
     products = Product.objects.all().order_by('created_at')
     
+    """
+    this allows to filter things without 
+    causing any bugs like not showing anything 
+    in template to ensure this always work
+    """
+    categories = form.fields['category'].queryset
+    
     print('form errors', form.errors)
     print('form valid', form.is_valid())
+    
+    
 
     if form.is_valid():
         search = form.cleaned_data.get('search')
         category = form.cleaned_data.get('category')
-
+        
         if search:
 
             products = products.filter(
@@ -53,7 +62,7 @@ def product_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    context = {'page_obj': page_obj, 'paginator': paginator, 'form': form}
+    context = {'page_obj': page_obj, 'paginator': paginator, 'form': form, 'categories': categories}
     return render(request, 'Product/product_list.html', context)
 
 

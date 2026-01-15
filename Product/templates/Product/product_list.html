@@ -43,7 +43,7 @@
             <div class="col-md-3">
                 <select name="category" class="form-select rounded-3">
                     <option value="">All categories</option>
-                    {% for cat in form.fields.category.queryset %}
+                    {% for cat in categories%}
                         <option value="{{ cat.id }}"
                                 {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
                             {{ cat.name }}

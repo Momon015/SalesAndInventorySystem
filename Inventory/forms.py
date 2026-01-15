@@ -14,7 +14,8 @@ class MaterialFilterForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        self.fields['category'].queryset = Category.objects.filter(category_type='material')
+        qs = Category.objects.filter(category_type='material')
+        self.fields['category'].queryset = qs
         
 class MaterialForm(ModelForm):
     class Meta:
