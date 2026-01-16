@@ -22,6 +22,8 @@ from Inventory.forms import MaterialForm, MaterialFilterForm
 
 from django.db.models import Q
 
+from django.core.paginator import Paginator
+
 # Create your views here.
 
 def material_list(request):
@@ -29,7 +31,9 @@ def material_list(request):
     form = MaterialFilterForm(request.GET or None)
     materials = Material.objects.all()
 
-    stock_filter = request.GET.get('stock')
+    
+    total_items = materials.count()
+    out_of_stock = materials.filter(quantity__lte=0).count()
     
     """
     this allows to filter things without 
@@ -37,6 +41,8 @@ def material_list(request):
     in template to ensure this always work
     """
     categories = form.fields['category'].queryset 
+    
+    stock_filter = request.GET.get('stock')
     
     if form.is_valid():
         search = form.cleaned_data.get('search')
@@ -64,9 +70,14 @@ def material_list(request):
             materials = materials.filter(quantity=0)
     else:
         print('form errors', form.errors)
+        
+    # pagination
+    paginator = Paginator(materials, 8)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
            
 
-    context = {'materials': materials, 'categories': categories}
+    context = {'page_obj': materials, 'categories': categories, 'out_of_stock': out_of_stock, 'page_obj': page_obj, 'total_items': total_items}
     return render(request, 'Inventory/material_list.html', context)
 
 def material_create(request):

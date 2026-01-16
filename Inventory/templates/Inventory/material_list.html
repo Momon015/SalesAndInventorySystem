@@ -19,15 +19,14 @@
 
   <div class="row g-3 g-lg-4">
 
-    <!-- LEFT: FILTER BAR + MATERIAL TABLE -->
+    <!-- LEFT -->
     <div class="col-lg-8 col-xl-9">
 
-      <!-- OUTSIDE TOOLBAR (ABOVE WHITE GRID) -->
+      <!-- FILTER BAR -->
       <div class="mb-2 mb-lg-3">
         <form method="get" autocomplete="off">
           <div class="d-flex flex-wrap gap-2 align-items-center w-100">
 
-            <!-- search -->
             <div class="flex-grow-1">
               <div class="input-group input-group-sm">
                 <span class="input-group-text bg-white border-end-0">
@@ -43,28 +42,23 @@
               </div>
             </div>
 
-            <!-- Category Dropdown -->
             <div>
-              <select
-                name="category"
-                class="form-select form-select-sm"
-              >
+              <select name="category" class="form-select form-select-sm">
                 <option value="">All categories</option>
-                {% for cat in categories%}
+                {% for cat in categories %}
                   <option value="{{ cat.id }}"
-                          {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+                    {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
                     {{ cat.name }}
                   </option>
                 {% endfor %}
               </select>
             </div>
 
-            <!-- filter / reset -->
             <div class="d-flex gap-2">
-              <button class="btn btn-outline-secondary rounded-3 px-3 btn-sm" type="submit">
+              <button class="btn btn-outline-secondary btn-sm px-3" type="submit">
                 Filter
               </button>
-              <a href="." class="btn btn-light border rounded-3 px-3 btn-sm">
+              <a href="." class="btn btn-light border btn-sm px-3">
                 Reset
               </a>
             </div>
@@ -73,18 +67,16 @@
         </form>
       </div>
 
-      <!-- WHITE GRID CARD -->
+      <!-- TABLE CARD -->
       <div class="card border-0 shadow-sm rounded-4">
 
-        <!-- CARD HEADER -->
+        <!-- HEADER -->
         <div class="card-header bg-white border-bottom px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
             <span class="badge text-bg-primary rounded-pill">
-              {{ materials|length|default:"0" }}
+              {{ page_obj.paginator.count }}
             </span>
-            <h6 class="mb-0 fw-semibold">
-              Material List
-            </h6>
+            <h6 class="mb-0 fw-semibold">Material List</h6>
           </div>
           <small class="text-muted d-none d-sm-inline">
             Click edit to update price or stock.
@@ -105,56 +97,21 @@
               </tr>
             </thead>
             <tbody>
-              {% for material in materials %}
+              {% for material in page_obj %}
               <tr>
-                <!-- MATERIAL -->
-                <td class="ps-3 ps-lg-4">
-                  <div class="fw-semibold">{{ material.name }}</div>
-                  {% if material.description %}
-                    <small class="text-muted d-none d-md-inline">
-                      {{ material.description|truncatechars:40 }}
-                    </small>
-                  {% endif %}
-                </td>
-
-                <!-- PRICE -->
-                <td class="price-cell">
-                  ₱{{ material.price|floatformat:2 }}
-                </td>
-
-                <!-- CATEGORY -->
-                <td class="category-cell">
-                  {{ material.category.name|default:"Uncategorized" }}
-                </td>
-
-                <!-- QUANTITY -->
-                <td class="quantity-cell">
-                  <span class="fw-semibold">
-                    {% comment %} {% if material.quantity <= 0 %}text-danger
-                    {% elif material.quantity <= 10 %}text-warning
-                    {% else %}text-success{% endif %}"> {% endcomment %}
-                    {{ material.quantity|intcomma }}
-                  </span>
-                </td>
-
-                <!-- STATUS -->
+                <td class="ps-3 ps-lg-4 fw-semibold">{{ material.name }}</td>
+                <td class="price-cell">₱{{ material.price|floatformat:2 }}</td>
+                <td class="category-cell">{{ material.category.name|default:"Uncategorized" }}</td>
+                <td class="quantity-cell">{{ material.quantity|intcomma }}</td>
                 <td class="text-center px-3 px-lg-4">
                   {% if material.quantity <= 0 %}
-                    <span class="badge bg-danger-subtle text-danger rounded-pill px-3">
-                      Out of Stock
-                    </span>
+                    <span class="badge bg-danger-subtle text-danger px-3 rounded-pill">Out of Stock</span>
                   {% elif material.quantity <= 10 %}
-                    <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
-                      Low Stock
-                    </span>
+                    <span class="badge bg-warning-subtle text-warning px-3 rounded-pill">Low stock</span>
                   {% else %}
-                    <span class="badge bg-success-subtle text-success rounded-pill px-3">
-                      Available
-                    </span>
+                    <span class="badge bg-success-subtle text-success px-3 rounded-pill">Available</span>
                   {% endif %}
                 </td>
-
-                <!-- ACTIONS -->
                 <td class="text-end pe-3 pe-lg-4">
                   <div class="btn-group btn-group-sm">
                     <a href="{% url 'material-update' material.slug %}" class="btn btn-outline-secondary">
@@ -169,130 +126,155 @@
               {% empty %}
               <tr>
                 <td colspan="6" class="text-center py-4 text-muted">
-                  No materials found. Adjust your filter or reset to see all.
+                  No materials found.
                 </td>
               </tr>
               {% endfor %}
             </tbody>
-
           </table>
         </div>
 
+        <!-- PAGINATION (FIXED) -->
+        {% if page_obj.has_other_pages %}
+        <div class="border-top px-3 px-lg-4 py-3">
+          <nav>
+            <ul class="pagination pagination-sm mb-0 justify-content-end">
 
+              {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page=' }}">
+                  Previous
+                </a>
+              </li>
+              {% endif %}
+
+              <li class="page-item disabled">
+                <span class="page-link">
+                  Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+              </li>
+
+              {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page=' }}">
+                  Next
+                </a>
+              </li>
+              {% endif %}
+
+            </ul>
+          </nav>
+        </div>
+        {% endif %}
 
       </div>
     </div>
 
-    <!-- RIGHT: POS-STYLE CONTEXT PANEL -->
-    <div class="col-lg-4 col-xl-3">
-      <div class="card border-0 shadow-sm rounded-4 h-100">
+<!-- RIGHT: POS-STYLE CONTEXT PANEL -->
+<div class="col-lg-4 col-xl-3">
+  <div class="card border-0 shadow-sm rounded-4 h-100">
 
-        <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
-          <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-speedometer2"></i>
-            <h6 class="mb-0 fw-semibold">Stock Health</h6>
-          </div>
-          <small class="text-white-50 d-none d-sm-inline">Live overview</small>
-        </div>
-
-        <div class="card-body px-3 px-lg-4 py-3 small d-flex flex-column gap-3">
-
-          <!-- Counters -->
-          <div class="row g-2">
-            <div class="col-6">
-              <div class="border rounded-3 px-2 py-2 bg-light">
-                <div class="text-muted text-uppercase small">Total Items</div>
-                <div class="fs-5 fw-semibold">
-                  {{ materials|length|default:"0" }}
-                </div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="border rounded-3 px-2 py-2 bg-light">
-                <div class="text-muted text-uppercase small">Out of Stock</div>
-                <div class="fs-5 fw-semibold text-danger">
-                  {{ materials|length }} {# replace with real count later #}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Status pills -->
-          <div class="border rounded-3 px-2 py-2 bg-body-tertiary">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span class="text-muted text-uppercase small">Status breakdown</span>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-              <span class="badge bg-success-subtle text-success">
-                ● Available
-              </span>
-              <span class="badge bg-warning-subtle text-warning">
-                ● Low stock
-              </span>
-              <span class="badge bg-danger-subtle text-danger">
-                ● Out of stock
-              </span>
-            </div>
-          </div>
-
-          <!-- Quick actions -->
-          <div class="border rounded-3 px-2 py-2">
-            <div class="text-muted text-uppercase small mb-2">Quick actions</div>
-            <div class="d-grid gap-2">
-              <a href="{% url 'material-create' %}" class="btn btn-sm btn-primary">
-                <i class="bi bi-plus-circle me-1"></i>
-                New material
-              </a>
-              <a href="{% url 'material-list' %}?stock=high" class="btn btn-sm btn-outline-success">
-                <i class="bi bi-box-seam me-1"></i>
-                View available stock
-              </a>
-              <a href="{% url 'material-list' %}?stock=low" class="btn btn-sm btn-outline-warning">
-                <i class="bi bi-exclamation-triangle me-1"></i>
-                View low stock
-              </a>
-              <a href="{% url 'material-list' %}?stock=none" class="btn btn-sm btn-outline-danger">
-                <i class="bi bi-slash-circle me-1"></i>
-                View out of stock
-              </a>
-            </div>
-          </div>
-
-          <!-- POS-style tip / context -->
-          <div class="alert alert-light border-0 mb-0">
-            <div class="d-flex">
-              <div class="me-2">
-                <i class="bi bi-lightning-charge text-warning"></i>
-              </div>
-              <div>
-                <div class="fw-semibold small">Reorder suggestions</div>
-                <div class="small text-muted">
-                  Set minimum stock per material and auto-flag items for reordering before they run out.
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
+    <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-speedometer2"></i>
+        <h6 class="mb-0 fw-semibold">Stock Health</h6>
       </div>
+      <small class="text-white-50 d-none d-sm-inline">
+        Live overview
+      </small>
     </div>
 
+    <div class="card-body px-3 px-lg-4 py-3 small d-flex flex-column gap-3">
+
+      <!-- Counters -->
+      <div class="row g-2">
+        <div class="col-6">
+          <div class="border rounded-3 px-2 py-2 bg-light">
+            <div class="text-muted text-uppercase small">Total Items</div>
+            <div class="fs-5 fw-semibold">
+              {{ total_items }}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6">
+          <div class="border rounded-3 px-2 py-2 bg-light">
+            <div class="text-muted text-uppercase small">Out of Stock</div>
+            <div class="fs-5 fw-semibold text-danger">
+              {{ out_of_stock }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status pills -->
+      <div class="border rounded-3 px-2 py-2 bg-body-tertiary">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="text-muted text-uppercase small">
+            Status breakdown
+          </span>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge bg-success-subtle text-success">● Available</span>
+          <span class="badge bg-warning-subtle text-warning">● Low stock</span>
+          <span class="badge bg-danger-subtle text-danger">● Out of stock</span>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="border rounded-3 px-2 py-2">
+        <div class="text-muted text-uppercase small mb-2">
+          Quick actions
+        </div>
+        <div class="d-grid gap-2">
+          <a href="{% url 'material-create' %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>
+            New material
+          </a>
+
+          <a href="{% url 'material-list' %}?stock=high" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-box-seam me-1"></i>
+            View available stock
+          </a>
+
+          <a href="{% url 'material-list' %}?stock=low" class="btn btn-sm btn-outline-warning">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            View low stock
+          </a>
+
+          <a href="{% url 'material-list' %}?stock=none" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-slash-circle me-1"></i>
+            View out of stock
+          </a>
+        </div>
+      </div>
+
+      <!-- POS-style tip -->
+      <div class="alert alert-light border-0 mb-0">
+        <div class="d-flex">
+          <div class="me-2">
+            <i class="bi bi-lightning-charge text-warning"></i>
+          </div>
+          <div>
+            <div class="fw-semibold small">Reorder suggestions</div>
+            <div class="small text-muted">
+              Set minimum stock per material and auto-flag items for reordering before they run out.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 </div>
+
 {% endblock %}
 
 <style>
-  /* Set consistent widths for table columns */
-  .price-cell { width: 120px; text-align: right; }
-  .category-cell { width: 140px; text-align: center; }
-  .quantity-cell { width: 120px; text-align: right; }
-
-  table th, table td {
-    vertical-align: middle;
-  }
+.price-cell { width: 120px; text-align: right; }
+.category-cell { width: 140px; text-align: center; }
+.quantity-cell { width: 120px; text-align: right; }
+table th, table td { vertical-align: middle; }
 </style>
-
-
-
-
