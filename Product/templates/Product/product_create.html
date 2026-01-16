@@ -1,13 +1,13 @@
-{% extends 'main.html' %}
+{% extends "main.html" %}
 {% block content %}
 
 <script>
 function changeValue(fieldId, delta) {
-    const input = document.getElementById(fieldId);
-    let value = parseInt(input.value) || 0;
-    value += delta;
-    if (value < 0) value = 0;
-    input.value = value;
+  const input = document.getElementById(fieldId);
+  let value = parseInt(input.value) || 0;
+  value += delta;
+  if (value < 0) value = 0;
+  input.value = value;
 }
 </script>
 
@@ -15,165 +15,254 @@ function changeValue(fieldId, delta) {
 /* Remove default number spinners */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 input[type=number] {
-    -moz-appearance: textfield;
+  -moz-appearance: textfield;
 }
 
-/* Inventory-style tweaks */
-.card-inventory {
-    border-radius: 1rem;
-    overflow: hidden;
-}
-
-.card-inventory .card-header {
-    background: linear-gradient(135deg, #0d6efd, #198754);
-}
-
-.badge-status {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: .05rem;
+/* POS-style tweaks */
+.card-pos {
+  border-radius: 1rem;
 }
 
 .form-section-title {
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: #6c757d;
-    margin-bottom: .25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #6c757d;
+  margin-bottom: .25rem;
 }
 
 .helper-text {
-    font-size: 0.8rem;
-    color: #6c757d;
+  font-size: 0.8rem;
+  color: #6c757d;
 }
 
 input[readonly] {
-    background-color: #f8f9fa;
+  background-color: #f8f9fa;
 }
 </style>
 
-<div class="container py-4">
-    <!-- Page header / breadcrumbs -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h3 class="mb-1">Add Product</h3>
-            <p class="text-muted mb-0">Create a new item for your sales and inventory catalog.</p>
-        </div>
-        <div class="text-end">
-            <span class="badge bg-light text-secondary border badge-status">
-                Inventory module
+<div class="container-fluid py-3 py-lg-4">
+
+  <!-- PAGE HEADER -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+    <div class="mb-2 mb-lg-0">
+      <h4 class="fw-semibold mb-1 d-flex align-items-center gap-2">
+        <i class="bi bi-box-seam text-primary"></i>
+        Add Product
+      </h4>
+      <small class="text-muted">
+        Create a new item for your sales and inventory catalog.
+      </small>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="{% url 'product-list' %}"
+         class="btn btn-light border btn-sm rounded-3">
+        <i class="bi bi-arrow-left me-1"></i>
+        Back to products
+      </a>
+      <span class="badge bg-light text-secondary border rounded-pill">
+        Inventory module
+      </span>
+    </div>
+  </div>
+
+  <div class="row g-3 g-lg-4">
+
+    <!-- LEFT: MAIN FORM CARD -->
+    <div class="col-lg-8 col-xl-9">
+      <div class="card border-0 shadow-sm rounded-4 card-pos">
+        <div class="card-header bg-white border-bottom px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge text-bg-primary rounded-pill">
+              New
             </span>
+            <h6 class="mb-0 fw-semibold">Product details</h6>
+          </div>
+          <small class="text-muted d-none d-sm-inline">
+            Required fields are marked with <span class="text-danger">*</span>
+          </small>
         </div>
-    </div>
 
-    <div class="row">
-        <!-- Main form -->
-        <div class="col-lg-8 mb-3">
-            <div class="card shadow-sm card-inventory">
-                <div class="card-header text-white py-3 d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-box-seam fs-4"></i>
-                        <span class="fw-semibold">Product details</span>
+        <div class="card-body px-3 px-lg-4 py-3">
+          <form method="POST" class="row g-3">
+            {% csrf_token %}
+
+            {# NAME full width #}
+            {% if form.name %}
+            <div class="col-12">
+              <label for="{{ form.name.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
+                {{ form.name.label }}
+                {% if form.name.field.required %}<span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ form.name }}
+              {% if form.name.help_text %}
+                <div class="helper-text mt-1">
+                  {{ form.name.help_text }}
+                </div>
+              {% endif %}
+              {% if form.name.errors %}
+                <div class="text-danger mt-1 small">
+                  {{ form.name.errors|striptags }}
+                </div>
+              {% endif %}
+            </div>
+            {% endif %}
+
+            {# CATEGORY + SELLING PRICE aligned #}
+            <div class="col-md-6">
+              <label for="{{ form.category.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
+                {{ form.category.label }}
+                {% if form.category.field.required %}<span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ form.category }}
+              {% if form.category.help_text %}
+                <div class="helper-text mt-1">
+                  {{ form.category.help_text }}
+                </div>
+              {% endif %}
+              {% if form.category.errors %}
+                <div class="text-danger mt-1 small">
+                  {{ form.category.errors|striptags }}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label for="{{ form.selling_price.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
+                {{ form.selling_price.label }}
+                {% if form.selling_price.field.required %}<span class="text-danger">*</span>{% endif %}
+              </label>
+              <div class="input-group input-group-sm">
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="changeValue('{{ form.selling_price.id_for_label }}', -1)">
+                  −
+                </button>
+                {{ form.selling_price }}
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        onclick="changeValue('{{ form.selling_price.id_for_label }}', 1)">
+                  +
+                </button>
+              </div>
+              {% if form.selling_price.help_text %}
+                <div class="helper-text mt-1">
+                  {{ form.selling_price.help_text }}
+                </div>
+              {% endif %}
+              {% if form.selling_price.errors %}
+                <div class="text-danger mt-1 small">
+                  {{ form.selling_price.errors|striptags }}
+                </div>
+              {% endif %}
+            </div>
+
+            {# OTHER FIELDS loop, skipping ones handled above #}
+            {% for field in form %}
+              {% if field.name not in 'name category selling_price' %}
+                <div class="col-12{% if field.field.widget.input_type == 'number' %} col-md-6{% endif %}">
+                  <label for="{{ field.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
+                    {{ field.label }}
+                    {% if field.field.required %}
+                      <span class="text-danger">*</span>
+                    {% endif %}
+                  </label>
+
+                  {% if field.field.widget.input_type == "number" %}
+                    <div class="input-group input-group-sm">
+                      <button type="button"
+                              class="btn btn-outline-secondary"
+                              onclick="changeValue('{{ field.id_for_label }}', -1)">
+                        −
+                      </button>
+                      {{ field }}
+                      <button type="button"
+                              class="btn btn-outline-secondary"
+                              onclick="changeValue('{{ field.id_for_label }}', 1)">
+                        +
+                      </button>
                     </div>
-                    <span class="small text-white-50">Required fields are marked with *</span>
+                  {% else %}
+                    {{ field }}
+                  {% endif %}
+
+                  {% if field.help_text %}
+                    <div class="helper-text mt-1">
+                      {{ field.help_text }}
+                    </div>
+                  {% endif %}
+
+                  {% if field.errors %}
+                    <div class="text-danger mt-1 small">
+                      {{ field.errors|striptags }}
+                    </div>
+                  {% endif %}
                 </div>
+              {% endif %}
+            {% endfor %}
 
-                <div class="card-body p-4">
-                    <form method="POST" class="row g-3">
-                        {% csrf_token %}
-
-                        {% for field in form %}
-                            <div class="col-12{% if field.name in 'quantity stock reorder_level cost price' %} col-md-6{% endif %}">
-                                <label for="{{ field.id_for_label }}" class="form-label fw-medium">
-                                    {{ field.label }}
-                                    {% if field.field.required %}
-                                        <span class="text-danger">*</span>
-                                    {% endif %}
-                                </label>
-
-                                {% if field.field.widget.input_type == "number" %}
-                                    <div class="input-group">
-                                        <button type="button"
-                                                class="btn btn-outline-secondary"
-                                                onclick="changeValue('{{ field.id_for_label }}', -1)">
-                                            −
-                                        </button>
-                                        {{ field }}
-                                        <button type="button"
-                                                class="btn btn-outline-secondary"
-                                                onclick="changeValue('{{ field.id_for_label }}', 1)">
-                                            +
-                                        </button>
-                                    </div>
-                                {% else %}
-                                    {{ field }}
-                                {% endif %}
-
-                                {% if field.help_text %}
-                                    <div class="helper-text mt-1">
-                                        {{ field.help_text }}
-                                    </div>
-                                {% endif %}
-
-                                {% if field.errors %}
-                                    <div class="text-danger mt-1 small">
-                                        {{ field.errors|striptags }}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-
-                        <!-- Actions -->
-                        <div class="col-12 d-flex justify-content-between align-items-center pt-3 border-top mt-2">
-                            <div class="text-muted small">
-                                Data will automatically reflect in stock and sales reports.
-                            </div>
-                            <div class="d-flex gap-2">
-                                <a href="{% url 'product-list' %}"
-                                   class="btn btn-outline-secondary px-3 rounded-3">
-                                    Cancel
-                                </a>
-                                <button type="submit"
-                                        class="btn btn-primary px-4 rounded-3">
-                                    <i class="bi bi-save me-1"></i>
-                                    Save product
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+            <!-- Actions -->
+            <div class="col-12 d-flex justify-content-between align-items-center pt-3 border-top mt-2">
+              <div class="text-muted small">
+                Saved products will be available in POS, orders, and stock reports.
+              </div>
+              <div class="d-flex gap-2">
+                <a href="{% url 'product-list' %}"
+                   class="btn btn-outline-secondary btn-sm px-3 rounded-3">
+                  Cancel
+                </a>
+                <button type="submit"
+                        class="btn btn-primary btn-sm px-4 rounded-3">
+                  <i class="bi bi-save me-1"></i>
+                  Save product
+                </button>
+              </div>
             </div>
+          </form>
         </div>
-
-        <!-- Side summary / inventory hints -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm mb-3">
-                <div class="card-body">
-                    <div class="form-section-title">Stock guidance</div>
-                    <p class="helper-text mb-2">
-                        Use realistic quantities and reorder levels to keep stock balanced and avoid stockouts.
-                    </p>
-                    <ul class="helper-text ps-3 mb-0">
-                        <li>Set a reorder level below your usual quantity on hand.</li>
-                        <li>Use cost and selling price consistently for margin reports.</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <div class="form-section-title">Tips</div>
-                    <p class="helper-text mb-0">
-                        Group similar products under the same category and use clear, searchable names.
-                    </p>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <!-- RIGHT: POS-STYLE CONTEXT PANEL -->
+    <div class="col-lg-4 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 mb-3">
+        <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-speedometer2"></i>
+            <h6 class="mb-0 fw-semibold">Stock guidance</h6>
+          </div>
+          <small class="text-white-50 d-none d-sm-inline">Setup help</small>
+        </div>
+        <div class="card-body px-3 px-lg-4 py-3 small">
+          <div class="form-section-title">Reorder & stock</div>
+          <p class="helper-text mb-2">
+            Use realistic quantities and reorder levels to keep stock balanced and avoid stockouts.
+          </p>
+          <ul class="helper-text ps-3 mb-0">
+            <li>Set a reorder level below your usual quantity on hand.</li>
+            <li>Use cost and selling price consistently for margin reports.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body px-3 px-lg-4 py-3 small">
+          <div class="form-section-title">Catalog tips</div>
+          <p class="helper-text mb-2">
+            Group similar products under the same category and use clear, searchable names.
+          </p>
+          <p class="helper-text mb-0">
+            Include variants or sizes in the name if they affect pricing or stock tracking.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 {% endblock content %}

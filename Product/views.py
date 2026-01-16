@@ -40,7 +40,8 @@ def product_list(request):
     print('form errors', form.errors)
     print('form valid', form.is_valid())
     
-    
+    stock_filter = request.GET.get('stock')
+    out_of_stock = products.filter(stock=0).count()
 
     if form.is_valid():
         search = form.cleaned_data.get('search')
@@ -57,12 +58,30 @@ def product_list(request):
             )
         if category:
             products = products.filter(category=category)
+            
+        if stock_filter == 'high':
+            products = products.filter(stock__gte=50)
+            
+        elif stock_filter == 'low':
+            products = products.filter(Q(stock__lte=50) & Q(stock__gte=1))
+        elif stock_filter == 'none':
+            products = products.filter(stock=0)
     
+
     paginator = Paginator(products, 10)
-    page_number = request.GET.get('page')
+    page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
+        
     
-    context = {'page_obj': page_obj, 'paginator': paginator, 'form': form, 'categories': categories}
+
+    context = {
+        "page_obj": page_obj, # keep this as the Page object
+        "products": page_obj.object_list,  # optional: if you want a plain list
+        "form": form,
+        "categories": categories,
+        "out_of_stock": out_of_stock,
+    }
+
     return render(request, 'Product/product_list.html', context)
 
 

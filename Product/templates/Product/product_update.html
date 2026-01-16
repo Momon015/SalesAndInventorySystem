@@ -4,211 +4,326 @@
 
 <script>
 function changeValue(fieldId, delta, isInteger = false) {
-    const input = document.getElementById(fieldId);
-    let value = parseFloat(input.value) || 0;
-    value += delta;
-    if (value < 0) value = 0;
+  const input = document.getElementById(fieldId);
+  let value = parseFloat(input.value) || 0;
+  value += delta;
+  if (value < 0) value = 0;
 
-    if (isInteger) {
-        input.value = Math.round(value);
-    } else {
-        input.value = value.toFixed(2);
-    }
+  if (isInteger) {
+    input.value = Math.round(value);
+  } else {
+    input.value = value.toFixed(2);
+  }
 }
 </script>
 
 <style>
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 input[type=number] {
-    -moz-appearance: textfield;
-    text-align: center;
+  -moz-appearance: textfield;
+  text-align: center;
 }
 .btn-stepper {
-    width: 45px;
+  width: 45px;
 }
-.card-inventory {
-    border-radius: 1rem;
-    overflow: hidden;
-}
+
 .section-title {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: .05rem;
-    color: #6c757d;
-    font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: .05rem;
+  color: #6c757d;
+  font-weight: 600;
 }
 </style>
 
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-xl-8 col-lg-9">
-            <div class="card shadow-sm border-0 card-inventory">
+<div class="container-fluid py-3 py-lg-4">
 
-                <!-- Header -->
-                <div class="card-header bg-primary text-white py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-pencil-square"></i>
-                            <h4 class="mb-0 fw-semibold">Update Product</h4>
-                        </div>
-                        {% if object %}
-                            <div class="text-end small text-white-50">
-                                <div>SKU: {{ object.sku }}</div>
-                                <div>Last updated: {{ object.updated_at|date:"M d, Y H:i" }}</div>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="card-body p-4">
-                    <p class="text-muted mb-4">
-                        Review and adjust product information, stock levels, and pricing. Changes will immediately affect inventory and sales reports.
-                    </p>
-
-                    <form method="POST" class="row g-4" autocomplete="off">
-                        {% csrf_token %}
-
-                        <!-- Basic info -->
-                        <div class="col-md-7">
-                            <div class="mb-2 section-title">Product details</div>
-                            {% for field in form %}
-                                {% if field.name not in "stock cost_price selling_price" %}
-                                    <div class="mb-3">
-                                        <label for="{{ field.id_for_label }}" class="form-label fw-medium">
-                                            {{ field.label }}
-                                            {% if field.field.required %}
-                                                <span class="text-danger">*</span>
-                                            {% endif %}
-                                        </label>
-                                        {{ field }}
-                                        {% if field.help_text %}
-                                            <div class="form-text small">{{ field.help_text }}</div>
-                                        {% endif %}
-                                        {% if field.errors %}
-                                            <div class="text-danger mt-1 small">
-                                                {{ field.errors|striptags }}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-
-                        <!-- Inventory & pricing -->
-                        <div class="col-md-5">
-                            <div class="border rounded-3 p-3 mb-3 bg-light">
-                                <div class="mb-2 section-title d-flex align-items-center gap-2">
-                                    <i class="bi bi-box-seam"></i> Inventory
-                                </div>
-
-                                {% for field in form %}
-                                    {% if field.name == "stock" %}
-                                        <label for="{{ field.id_for_label }}" class="form-label fw-medium">
-                                            Current stock
-                                            {% if field.field.required %}
-                                                <span class="text-danger">*</span>
-                                            {% endif %}
-                                        </label>
-                                        <div class="input-group mb-2">
-                                            <button type="button"
-                                                    class="btn btn-outline-secondary btn-stepper"
-                                                    onclick="changeValue('{{ field.id_for_label }}', -1, true)">−</button>
-                                            {{ field }}
-                                            <button type="button"
-                                                    class="btn btn-outline-secondary btn-stepper"
-                                                    onclick="changeValue('{{ field.id_for_label }}', 1, true)">+</button>
-                                        </div>
-                                        {% if field.errors %}
-                                            <div class="text-danger mt-1 small">
-                                                {{ field.errors|striptags }}
-                                            </div>
-                                        {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-
-                            <div class="border rounded-3 p-3 bg-light">
-                                <div class="mb-2 section-title d-flex align-items-center gap-2">
-                                    <i class="bi bi-cash-coin"></i> Pricing
-                                </div>
-
-                                {% for field in form %}
-                                    {% if field.name == "cost_price" or field.name == "selling_price" %}
-                                        <label for="{{ field.id_for_label }}" class="form-label fw-medium">
-                                            {{ field.label }}
-                                            {% if field.field.required %}
-                                                <span class="text-danger">*</span>
-                                            {% endif %}
-                                        </label>
-                                        <div class="input-group mb-2">
-                                            <span class="input-group-text">₱</span>
-                                            <button type="button"
-                                                    class="btn btn-outline-secondary btn-stepper"
-                                                    onclick="changeValue('{{ field.id_for_label }}', -1, false)">−</button>
-                                            {{ field }}
-                                            <button type="button"
-                                                    class="btn btn-outline-secondary btn-stepper"
-                                                    onclick="changeValue('{{ field.id_for_label }}', 1, false)">+</button>
-                                        </div>
-                                        {% if field.errors %}
-                                            <div class="text-danger mt-1 small">
-                                                {{ field.errors|striptags }}
-                                            </div>
-                                        {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-
-                                {% if object %}
-                                    <hr>
-                                    <div class="d-flex justify-content-between small">
-                                        <span>Gross value in stock:</span>
-                                        <span>
-                                            ₱{{ object.stock }} × ₱{{ object.cost_price|default:"0" }}
-                                        </span>
-                                    </div>
-                                    <div class="d-flex justify-content-between small">
-                                        <span>Potential revenue:</span>
-                                        <span>
-                                            ₱{{ object.stock }} × ₱{{ object.selling_price|default:"0" }}
-                                        </span>
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="col-12 d-flex justify-content-between align-items-center mt-2">
-                            <span class="text-muted small">
-                                Ensure quantities and prices are correct before saving changes.
-                            </span>
-                            <div class="d-flex gap-2">
-                                <a href="{% url 'product-list' %}"
-                                   class="btn btn-outline-secondary px-4 py-2 rounded-3">
-                                    Cancel
-                                </a>
-                                {% if object %}
-                                    <a href="{% url 'product-detail' object.pk %}"
-                                       class="btn btn-outline-primary px-3 py-2 rounded-3">
-                                        View detail
-                                    </a>
-                                {% endif %}
-                                <button type="submit"
-                                        class="btn btn-primary px-4 py-2 rounded-3">
-                                    Update
-                                </button>
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-
-            </div>
-        </div>
+  <!-- PAGE HEADER -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+    <div class="mb-2 mb-lg-0">
+      <h4 class="fw-semibold mb-1 d-flex align-items-center gap-2">
+        <i class="bi bi-pencil-square text-primary"></i>
+        Update Product
+      </h4>
+      <small class="text-muted">
+        Edit product details, stock levels, and pricing. Changes apply immediately across POS and reports.
+      </small>
     </div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="{% url 'product-list' %}"
+         class="btn btn-light border btn-sm rounded-3">
+        <i class="bi bi-arrow-left me-1"></i>
+        Back to products
+      </a>
+      {% if object %}
+        <div class="text-end small text-muted d-none d-md-block">
+          <div>SKU: {{ object.sku }}</div>
+          <div>Last updated: {{ object.updated_at|date:"M d, Y H:i" }}</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row g-3 g-lg-4">
+
+    <!-- LEFT: MAIN FORM CARD -->
+    <div class="col-lg-8 col-xl-9">
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white border-bottom px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge text-bg-primary rounded-pill">
+              Edit
+            </span>
+            <h6 class="mb-0 fw-semibold">Product information</h6>
+          </div>
+          <small class="text-muted d-none d-sm-inline">
+            Required fields are marked with <span class="text-danger">*</span>
+          </small>
+        </div>
+
+        <div class="card-body px-3 px-lg-4 py-3">
+          <form method="POST" class="row g-4" autocomplete="off">
+            {% csrf_token %}
+
+            <!-- Basic info (left) -->
+            <div class="col-md-7">
+              <div class="mb-2 section-title">Product details</div>
+              {% for field in form %}
+                {% if field.name not in "stock cost_price selling_price" %}
+                  <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
+                      {{ field.label }}
+                      {% if field.field.required %}
+                        <span class="text-danger">*</span>
+                      {% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                      <div class="form-text small">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% if field.errors %}
+                      <div class="text-danger mt-1 small">
+                        {{ field.errors|striptags }}
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+
+            <!-- Inventory & pricing (right inside main card) -->
+            <div class="col-md-5">
+              <div class="border rounded-3 p-3 mb-3 bg-light">
+                <div class="mb-2 section-title d-flex align-items-center gap-2">
+                  <i class="bi bi-box-seam"></i> Inventory
+                </div>
+
+                {% for field in form %}
+                  {% if field.name == "stock" %}
+                    <label for="{{ field.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
+                      Current stock
+                      {% if field.field.required %}
+                        <span class="text-danger">*</span>
+                      {% endif %}
+                    </label>
+                    <div class="input-group mb-2">
+                      <button type="button"
+                              class="btn btn-outline-secondary btn-stepper"
+                              onclick="changeValue('{{ field.id_for_label }}', -1, true)">−</button>
+                      {{ field }}
+                      <button type="button"
+                              class="btn btn-outline-secondary btn-stepper"
+                              onclick="changeValue('{{ field.id_for_label }}', 1, true)">+</button>
+                    </div>
+                    {% if field.errors %}
+                      <div class="text-danger mt-1 small">
+                        {{ field.errors|striptags }}
+                      </div>
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+              </div>
+
+              <div class="border rounded-3 p-3 bg-light">
+                <div class="mb-2 section-title d-flex align-items-center gap-2">
+                  <i class="bi bi-cash-coin"></i> Pricing
+                </div>
+
+                {% for field in form %}
+                  {% if field.name == "cost_price" or field.name == "selling_price" %}
+                    <label for="{{ field.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
+                      {{ field.label }}
+                      {% if field.field.required %}
+                        <span class="text-danger">*</span>
+                      {% endif %}
+                    </label>
+                    <div class="input-group mb-2">
+                      <span class="input-group-text">₱</span>
+                      <button type="button"
+                              class="btn btn-outline-secondary btn-stepper"
+                              onclick="changeValue('{{ field.id_for_label }}', -1, false)">−</button>
+                      {{ field }}
+                      <button type="button"
+                              class="btn btn-outline-secondary btn-stepper"
+                              onclick="changeValue('{{ field.id_for_label }}', 1, false)">+</button>
+                    </div>
+                    {% if field.errors %}
+                      <div class="text-danger mt-1 small">
+                        {{ field.errors|striptags }}
+                      </div>
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+
+                {% if object %}
+                  <hr>
+                  <div class="d-flex justify-content-between small">
+                    <span>Gross value in stock:</span>
+                    <span>
+                      ₱{{ object.stock }} × ₱{{ object.cost_price|default:"0" }}
+                    </span>
+                  </div>
+                  <div class="d-flex justify-content-between small">
+                    <span>Potential revenue:</span>
+                    <span>
+                      ₱{{ object.stock }} × ₱{{ object.selling_price|default:"0" }}
+                    </span>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="col-12 d-flex justify-content-between align-items-center pt-3 border-top mt-2">
+              <span class="text-muted small">
+                Ensure quantities and prices are correct before saving changes.
+              </span>
+              <div class="d-flex gap-2">
+                <a href="{% url 'product-detail' product.slug %}"
+                   class="btn btn-outline-secondary px-3 py-2 rounded-3">
+                  Cancel
+                </a>
+                {% if object %}
+                  <a href="{% url 'product-detail' object.pk %}"
+                     class="btn btn-outline-primary px-3 py-2 rounded-3">
+                    View detail
+                  </a>
+                {% endif %}
+                <button type="submit"
+                        class="btn btn-primary px-4 py-2 rounded-3">
+                  Update
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: POS-STYLE CONTEXT PANEL -->
+<div class="col-lg-4 col-xl-3">
+  <div class="card border-0 shadow-sm rounded-4 h-100">
+
+    <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-speedometer2"></i>
+        <h6 class="mb-0 fw-semibold">Product</h6>
+      </div>
+      <small class="text-white-50 d-none d-sm-inline">Live impact</small>
+    </div>
+
+    <div class="card-body px-3 px-lg-4 py-3 small d-flex flex-column gap-3">
+
+      {% if object %}
+      <!-- Stock snapshot -->
+      <div class="border rounded-3 px-2 py-2 bg-light">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="text-muted text-uppercase small">Current stock</span>
+          {% if object.stock <= 0 %}
+            <span class="badge bg-danger-subtle text-danger rounded-pill px-3">
+              Out of stock
+            </span>
+          {% elif object.stock <= 5 %}
+            <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
+              Low stock
+            </span>
+          {% else %}
+            <span class="badge bg-success-subtle text-success rounded-pill px-3">
+              In stock
+            </span>
+          {% endif %}
+        </div>
+        <div class="fs-5 fw-semibold
+          {% if object.stock <= 0 %}
+            text-danger
+          {% elif object.stock <= 5 %}
+            text-warning
+          {% else %}
+            text-success
+          {% endif %}
+        ">
+          {{ object.stock }}
+        </div>
+        <div class="small text-muted">
+          Use this as reference when adjusting the stock field on the left.
+        </div>
+      </div>
+
+      <!-- Value and revenue -->
+      <div class="border rounded-3 px-2 py-2 bg-body-tertiary">
+        <div class="text-muted text-uppercase small mb-1">Value overview</div>
+        <div class="d-flex justify-content-between small">
+          <span>Stock value (cost):</span>
+          <span>
+            ₱{{ object.stock }} × ₱{{ object.cost_price|default:"0.00" }}
+          </span>
+        </div>
+        <div class="d-flex justify-content-between small">
+          <span>Potential revenue:</span>
+          <span>
+            ₱{{ object.stock }} × ₱{{ object.selling_price|default:"0.00" }}
+          </span>
+        </div>
+        <div class="small text-muted mt-1">
+          Changing cost or price will affect margins and reports for this item.
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Status legend -->
+      <div class="border rounded-3 px-2 py-2">
+        <div class="text-muted text-uppercase small mb-1">How changes behave</div>
+        <ul class="small text-muted mb-0 ps-3">
+          <li>Stock changes do not alter sales history.</li>
+          <li>New prices apply to future sales only.</li>
+          <li>Keep cost updated for accurate profit reporting.</li>
+        </ul>
+      </div>
+
+      <!-- POS-style tip -->
+      <div class="alert alert-light border-0 mb-0">
+        <div class="d-flex">
+          <div class="me-2">
+            <i class="bi bi-lightning-charge text-warning"></i>
+          </div>
+          <div>
+            <div class="fw-semibold small">Before you save</div>
+            <div class="small text-muted">
+              Double-check stock, cost, and selling price, especially after stock counts or supplier price changes.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
 </div>
+
 
 {% endblock content %}
