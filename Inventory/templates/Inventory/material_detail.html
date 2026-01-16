@@ -1,0 +1,220 @@
+{% extends "main.html" %}
+
+{% block content %}
+<div class="container-fluid py-3 py-lg-4">
+
+  <!-- PAGE HEADER -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+    <div class="mb-2 mb-lg-0">
+      <h4 class="fw-semibold mb-1 d-flex align-items-center gap-2">
+        <i class="bi bi-boxes text-primary"></i>
+        Material Details
+      </h4>
+      <small class="text-muted">
+        View pricing and stock information for this raw material.
+      </small>
+    </div>
+    <div class="d-flex gap-2">
+      <!-- EDIT BUTTON -->
+      <a href="{% url 'material-update' material.slug %}"
+         class="btn btn-primary btn-sm rounded-3">
+        <i class="bi bi-pencil me-1"></i>
+        Edit material
+      </a>
+      <!-- DELETE BUTTON -->
+        <a href="{% url 'material-delete' material.slug %}"
+        class="btn btn-outline-danger btn-sm rounded-3">
+        <i class="bi bi-trash me-1"></i>
+        Delete
+        </a>
+      <a href="{% url 'material-list' %}" class="btn btn-light border btn-sm rounded-3">
+        <i class="bi bi-arrow-left me-1">
+            Go Back
+        </i>
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3 g-lg-4">
+
+    <!-- LEFT: MAIN DETAIL CARD -->
+    <div class="col-lg-8 col-xl-9">
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white border-bottom px-3 px-lg-4 py-2 py-lg-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column">
+              <span class="text-uppercase small text-muted">Material</span>
+              <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+                {{ material.name }}
+              </h5>
+            </div>
+            <div class="text-end">
+              <span class="text-uppercase small text-muted d-block">Current price</span>
+              <span class="fs-5 fw-semibold text-dark">
+                ₱{{ material.price|floatformat:2 }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body px-3 px-lg-4 py-3">
+
+          <!-- Basic info -->
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <div class="border rounded-3 px-3 py-2 bg-light">
+                <div class="text-muted text-uppercase small">Category</div>
+                <div class="fw-semibold">
+                  {{ material.category.name|default:"Uncategorized" }}
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border rounded-3 px-3 py-2 bg-light">
+                <div class="text-muted text-uppercase small">Quantity</div>
+                <div class="fw-semibold
+                  {% if material.quantity <= 0 %}
+                    text-danger
+                  {% elif material.quantity <= 10 %}
+                    text-warning
+                  {% else %}
+                    text-success
+                  {% endif %}
+                ">
+                  {{ material.quantity }}
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="border rounded-3 px-3 py-2 bg-light">
+                <div class="text-muted text-uppercase small">Status</div>
+                <div>
+                  {% if material.quantity <= 0 %}
+                    <span class="badge bg-danger-subtle text-danger rounded-pill px-3">
+                      Out of Stock
+                    </span>
+                  {% elif material.quantity <= 10 %}
+                    <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
+                      Low Stock
+                    </span>
+                  {% else %}
+                    <span class="badge bg-success-subtle text-success rounded-pill px-3">
+                      Available
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes / context -->
+          <div class="border rounded-3 px-3 py-2 bg-body-tertiary small">
+            <div class="text-muted text-uppercase small mb-1">Notes</div>
+            <p class="mb-1 text-muted">
+              Use this material in recipes, products, or purchase orders. Keep price and quantity updated to maintain accurate cost and stock calculations in your POS.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="card-footer bg-white border-0 px-3 px-lg-4 py-2 small text-muted">
+          Last updated:
+          {% if material.updated_at %}
+            {{ material.updated_at|date:"M d, Y · h:i A" }}
+          {% else %}
+            Not available
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: POS-STYLE CONTEXT PANEL -->
+    <div class="col-lg-4 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+
+        <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-speedometer2"></i>
+            <h6 class="mb-0 fw-semibold">Stock context</h6>
+          </div>
+          <small class="text-white-50 d-none d-sm-inline">Quick view</small>
+        </div>
+
+        <div class="card-body px-3 px-lg-4 py-3 small d-flex flex-column gap-3">
+
+          <!-- Quantity + status -->
+          <div class="border rounded-3 px-2 py-2 bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-muted text-uppercase small">On hand</span>
+              {% if material.quantity <= 0 %}
+                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">
+                  Out of Stock
+                </span>
+              {% elif material.quantity <= 10 %}
+                <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
+                  Low Stock
+                </span>
+              {% else %}
+                <span class="badge bg-success-subtle text-success rounded-pill px-3">
+                  Available
+                </span>
+              {% endif %}
+            </div>
+            <div class="fs-5 fw-semibold
+              {% if material.quantity <= 0 %}
+                text-danger
+              {% elif material.quantity <= 10 %}
+                text-warning
+              {% else %}
+                text-success
+              {% endif %}
+            ">
+              {{ material.quantity }}
+            </div>
+          </div>
+
+          <!-- Price card -->
+          <div class="border rounded-3 px-2 py-2 bg-body-tertiary">
+            <div class="text-muted text-uppercase small mb-1">Current cost</div>
+            <div class="fs-5 fw-semibold text-dark">
+              ₱{{ material.price|floatformat:2 }}
+            </div>
+            <div class="small text-muted">
+              Update this when supplier prices change so recipe and product costs stay accurate.
+            </div>
+          </div>
+
+          <!-- Category / usage -->
+          <div class="border rounded-3 px-2 py-2">
+            <div class="text-muted text-uppercase small mb-1">Category</div>
+            <div class="fw-semibold mb-1">
+              {{ material.category.name|default:"Uncategorized" }}
+            </div>
+            <div class="small text-muted">
+              Group materials by category to simplify filtering in inventory and purchasing screens.
+            </div>
+          </div>
+
+          <!-- POS-style tip -->
+          <div class="alert alert-light border-0 mb-0">
+            <div class="d-flex">
+              <div class="me-2">
+                <i class="bi bi-lightning-charge text-warning"></i>
+              </div>
+              <div>
+                <div class="fw-semibold small">Reorder habits</div>
+                <div class="small text-muted">
+                  Decide a minimum quantity for this material and regularly check low-stock items to avoid last-minute shortages during service.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

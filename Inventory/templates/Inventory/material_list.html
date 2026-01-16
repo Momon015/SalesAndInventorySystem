@@ -114,11 +114,10 @@
                 </td>
                 <td class="text-end pe-3 pe-lg-4">
                   <div class="btn-group btn-group-sm">
-                    <a href="{% url 'material-update' material.slug %}" class="btn btn-outline-secondary">
-                      <i class="bi bi-pencil"></i>
-                    </a>
-                    <a href="{% url 'material-delete' material.slug %}" class="btn btn-outline-danger">
-                      <i class="bi bi-trash"></i>
+                    <a href="{% url 'material-detail' material.slug %}"
+                      class="btn btn-sm btn-outline-secondary rounded-3">
+                      <i class="bi bi-list-ul me-1"></i>
+                      Details
                     </a>
                   </div>
                 </td>

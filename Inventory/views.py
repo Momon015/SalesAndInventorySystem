@@ -96,6 +96,12 @@ def material_create(request):
     context = {'form': form}
     return render(request, 'Inventory/material_create.html', context)
 
+def material_detail(request, slug):
+    material = get_object_or_404(Material, slug=slug)
+    
+    context = {'material': material}
+    return render(request, 'inventory/material_detail.html', context)
+
 def material_update(request, slug):
     material = get_object_or_404(Material, slug=slug)
     
