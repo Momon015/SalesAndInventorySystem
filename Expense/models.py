@@ -59,10 +59,8 @@ class PurchaseItem(TimeStampModel):
     quantity = models.PositiveIntegerField(default=1)
     
     def __str__(self):
-        return f"Purchase ID: #{self.purchase.id}"
-        # total = self.purchase.total_cost if self.purchase and self.purchase.total_cost else 0
-        # return f"Purchase ID: #{self.purchase.id} - {self.total_price_per_item} - {self.discount} = {self.total_item_discount}"
-    
+        return f"{self.material.name} - ({self.material.price} x {self.quantity}) - {self.discount} = {self.total_item_discount}"
+
     @property
     def material_price(self):
         return self.material.price
