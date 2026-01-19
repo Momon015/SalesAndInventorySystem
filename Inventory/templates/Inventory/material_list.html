@@ -2,6 +2,132 @@
 {% load humanize %}
 
 {% block content %}
+
+<!-- FLASH MESSAGES -->
+{% if messages %}
+<div class="toast-container" aria-live="polite" aria-atomic="true">
+  {% for message in messages %}
+    <div class="toast-message toast-{{ message.tags }}">
+      {% if message.tags == "error" %}
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+      {% elif message.tags == "success" %}
+        <i class="bi bi-check-circle-fill me-2"></i>
+      {% elif message.tags == "info" %}
+        <i class="bi bi-info-circle-fill me-2"></i>
+      {% elif message.tags == "warning" %}
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {% endif %}
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<style>
+/* Toast container */
+#toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Base toast */
+.toast-message {
+  min-width: 240px;
+  max-width: 360px;
+  padding: 0.75rem 1rem;
+  border-radius: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: toast-in 0.35s ease forwards,
+             toast-out 0.35s ease forwards 2.8s;
+}
+
+/* Color variants (Django message tags) */
+.toast-success {
+  background: #e9f8ef;
+  color: #0f5132;
+  border-left: 4px solid #198754;
+}
+
+.toast-error,
+.toast-danger {
+  background: #fdecec;
+  color: #842029;
+  border-left: 4px solid #dc3545;
+}
+
+.toast-warning {
+  background: #fff4e5;
+  color: #664d03;
+  border-left: 4px solid #ffc107;
+}
+
+.toast-info {
+  background: #e7f1ff;
+  color: #084298;
+  border-left: 4px solid #0d6efd;
+}
+
+/* Animations */
+@keyframes toast-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const toasts = document.querySelectorAll(".toast-message");
+
+    toasts.forEach(toast => {
+      setTimeout(() => {
+        toast.remove();
+      }, 3200); // must match animation timing
+    });
+  });
+</script>
+
+<style>
+.price-cell { width: 120px; text-align: right; }
+.category-cell { width: 140px; text-align: center; }
+.quantity-cell { width: 120px; text-align: right; }
+table th, table td { vertical-align: middle; }
+
+/* extra-small action buttons */
+.btn-extra-sm {
+  padding: 0.4rem 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.1;
+}
+
+/* commented alt size left as-is */
+{% comment %}
+.btn-extra-sm {
+  padding: 0.1rem 0.4rem;
+  font-size: 0.7rem;
+  line-height: 1.1;
+}
+{% endcomment %}
+</style>
+
 <div class="container-fluid py-3 py-lg-4">
 
   <!-- PAGE HEADER -->
@@ -14,6 +140,14 @@
       <small class="text-muted">
         Monitor raw materials, prices, and stock health in real time.
       </small>
+    </div>
+
+    <!-- NEW: Create Purchase Record button -->
+    <div class="mb-2 mb-lg-0">
+      <a href="{% url 'view-cart' %}" class="btn btn-success btn-sm">
+        <i class="bi bi-receipt-cutoff me-1"></i>
+        Create Purchase Record
+      </a>
     </div>
   </div>
 
@@ -105,17 +239,23 @@
                 <td class="quantity-cell">{{ material.quantity|intcomma }}</td>
                 <td class="text-center px-3 px-lg-4">
                   {% if material.quantity <= 0 %}
-                    <span class="badge bg-danger-subtle text-danger px-3 rounded-pill">Out of Stock</span>
+                    <span class="badge bg-danger-subtle text-danger px-3 rounded-pill">Out of stock</span>
                   {% elif material.quantity <= 10 %}
                     <span class="badge bg-warning-subtle text-warning px-3 rounded-pill">Low stock</span>
                   {% else %}
-                    <span class="badge bg-success-subtle text-success px-3 rounded-pill">Available</span>
+                    <span class="badge bg-success-subtle text-success px-3 rounded-pill">In stock</span>
                   {% endif %}
                 </td>
-                <td class="text-end pe-3 pe-lg-4">
-                  <div class="btn-group btn-group-sm">
+                <td class="text-end pe-2 pe-lg-4">
+                  <div class="d-inline-flex gap-1">
+                    <a href="{% url 'add-cart' material.id %}?{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.category %}category={{ request.GET.category }}&{% endif %}"
+                       class="btn btn-outline-secondary rounded-2 btn-extra-sm">
+                      <i class="bi bi-plus me-1"></i>
+                      Add
+                    </a>
+
                     <a href="{% url 'material-detail' material.slug %}"
-                      class="btn btn-sm btn-outline-secondary rounded-3">
+                       class="btn btn-outline-secondary rounded-3 btn-extra-sm">
                       <i class="bi bi-list-ul me-1"></i>
                       Details
                     </a>
@@ -133,36 +273,39 @@
           </table>
         </div>
 
-        <!-- PAGINATION (FIXED) -->
-        {% if page_obj.has_other_pages %}
-        <div class="border-top px-3 px-lg-4 py-3">
+        <!-- Pagination -->
+        {% if page_obj and page_obj.paginator.num_pages > 1 %}
+        <div class="d-flex justify-content-center mt-4">
           <nav>
-            <ul class="pagination pagination-sm mb-0 justify-content-end">
+            <ul class="pagination">
+              {% with q=request.GET.search cat=request.GET.category %}
+                {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.previous_page_number }}{% if q %}&search={{ q }}{% endif %}{% if cat %}&category={{ cat }}{% endif %}">
+                      &laquo;
+                    </a>
+                  </li>
+                {% endif %}
 
-              {% if page_obj.has_previous %}
-              <li class="page-item">
-                <a class="page-link"
-                   href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page=' }}">
-                  Previous
-                </a>
-              </li>
-              {% endif %}
+                {% for page in page_obj.paginator.page_range %}
+                  <li class="page-item {% if page == page_obj.number %}active{% endif %}">
+                    <a class="page-link"
+                       href="?page={{ page }}{% if q %}&search={{ q }}{% endif %}{% if cat %}&category={{ cat }}{% endif %}">
+                      {{ page }}
+                    </a>
+                  </li>
+                {% endfor %}
 
-              <li class="page-item disabled">
-                <span class="page-link">
-                  Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                </span>
-              </li>
-
-              {% if page_obj.has_next %}
-              <li class="page-item">
-                <a class="page-link"
-                   href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page=' }}">
-                  Next
-                </a>
-              </li>
-              {% endif %}
-
+                {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ page_obj.next_page_number }}{% if q %}&search={{ q }}{% endif %}{% if cat %}&category={{ cat }}{% endif %}">
+                      &raquo;
+                    </a>
+                  </li>
+                {% endif %}
+              {% endwith %}
             </ul>
           </nav>
         </div>
@@ -171,109 +314,104 @@
       </div>
     </div>
 
-<!-- RIGHT: POS-STYLE CONTEXT PANEL -->
-<div class="col-lg-4 col-xl-3">
-  <div class="card border-0 shadow-sm rounded-4 h-100">
+    <!-- RIGHT: POS-STYLE CONTEXT PANEL -->
+    <div class="col-lg-4 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
 
-    <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-speedometer2"></i>
-        <h6 class="mb-0 fw-semibold">Stock Health</h6>
+        <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-speedometer2"></i>
+            <h6 class="mb-0 fw-semibold">Stock Health</h6>
+          </div>
+          <small class="text-white-50 d-none d-sm-inline">
+            Live overview
+          </small>
+        </div>
+
+        <div class="card-body px-3 px-lg-4 py-3 small d-flex flex-column gap-3">
+
+          <!-- Counters -->
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="border rounded-3 px-2 py-2 bg-light">
+                <div class="text-muted text-uppercase small">Total Items</div>
+                <div class="fs-5 fw-semibold">
+                  {{ total_items }}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-6">
+              <div class="border rounded-3 px-2 py-2 bg-light">
+                <div class="text-muted text-uppercase small">Out of Stock</div>
+                <div class="fs-5 fw-semibold text-danger">
+                  {{ out_of_stock }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status pills -->
+          <div class="border rounded-3 px-2 py-2 bg-body-tertiary">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-muted text-uppercase small">
+                Status breakdown
+              </span>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge bg-success-subtle text-success">● In stock</span>
+              <span class="badge bg-warning-subtle text-warning">● Low stock</span>
+              <span class="badge bg-danger-subtle text-danger">● Out of stock</span>
+            </div>
+          </div>
+
+          <!-- Quick actions -->
+          <div class="border rounded-3 px-2 py-2">
+            <div class="text-muted text-uppercase small mb-2">
+              Quick actions
+            </div>
+            <div class="d-grid gap-2">
+              <a href="{% url 'material-create' %}" class="btn btn-sm btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>
+                Add material
+              </a>
+
+              <a href="{% url 'material-list' %}?stock=high" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-box-seam me-1"></i>
+                View in-stock materials
+              </a>
+
+              <a href="{% url 'material-list' %}?stock=low" class="btn btn-sm btn-outline-warning">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Review low stock items
+              </a>
+
+              <a href="{% url 'material-list' %}?stock=none" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-slash-circle me-1"></i>
+                Clean up out-of-stock 
+              </a>
+            </div>
+          </div>
+
+          <!-- POS-style tip -->
+          <div class="alert alert-light border-0 mb-0">
+            <div class="d-flex">
+              <div class="me-2">
+                <i class="bi bi-lightning-charge text-warning"></i>
+              </div>
+              <div>
+                <div class="fw-semibold small">Reorder suggestions</div>
+                <div class="small text-muted">
+                  Set minimum stock per material and auto-flag items for reordering before they run out.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
-      <small class="text-white-50 d-none d-sm-inline">
-        Live overview
-      </small>
     </div>
 
-    <div class="card-body px-3 px-lg-4 py-3 small d-flex flex-column gap-3">
-
-      <!-- Counters -->
-      <div class="row g-2">
-        <div class="col-6">
-          <div class="border rounded-3 px-2 py-2 bg-light">
-            <div class="text-muted text-uppercase small">Total Items</div>
-            <div class="fs-5 fw-semibold">
-              {{ total_items }}
-            </div>
-          </div>
-        </div>
-
-        <div class="col-6">
-          <div class="border rounded-3 px-2 py-2 bg-light">
-            <div class="text-muted text-uppercase small">Out of Stock</div>
-            <div class="fs-5 fw-semibold text-danger">
-              {{ out_of_stock }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Status pills -->
-      <div class="border rounded-3 px-2 py-2 bg-body-tertiary">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <span class="text-muted text-uppercase small">
-            Status breakdown
-          </span>
-        </div>
-        <div class="d-flex flex-wrap gap-2">
-          <span class="badge bg-success-subtle text-success">● Available</span>
-          <span class="badge bg-warning-subtle text-warning">● Low stock</span>
-          <span class="badge bg-danger-subtle text-danger">● Out of stock</span>
-        </div>
-      </div>
-
-      <!-- Quick actions -->
-      <div class="border rounded-3 px-2 py-2">
-        <div class="text-muted text-uppercase small mb-2">
-          Quick actions
-        </div>
-        <div class="d-grid gap-2">
-          <a href="{% url 'material-create' %}" class="btn btn-sm btn-primary">
-            <i class="bi bi-plus-circle me-1"></i>
-            New material
-          </a>
-
-          <a href="{% url 'material-list' %}?stock=high" class="btn btn-sm btn-outline-success">
-            <i class="bi bi-box-seam me-1"></i>
-            View available stock
-          </a>
-
-          <a href="{% url 'material-list' %}?stock=low" class="btn btn-sm btn-outline-warning">
-            <i class="bi bi-exclamation-triangle me-1"></i>
-            View low stock
-          </a>
-
-          <a href="{% url 'material-list' %}?stock=none" class="btn btn-sm btn-outline-danger">
-            <i class="bi bi-slash-circle me-1"></i>
-            View out of stock
-          </a>
-        </div>
-      </div>
-
-      <!-- POS-style tip -->
-      <div class="alert alert-light border-0 mb-0">
-        <div class="d-flex">
-          <div class="me-2">
-            <i class="bi bi-lightning-charge text-warning"></i>
-          </div>
-          <div>
-            <div class="fw-semibold small">Reorder suggestions</div>
-            <div class="small text-muted">
-              Set minimum stock per material and auto-flag items for reordering before they run out.
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
   </div>
 </div>
-
 {% endblock %}
-
-<style>
-.price-cell { width: 120px; text-align: right; }
-.category-cell { width: 140px; text-align: center; }
-.quantity-cell { width: 120px; text-align: right; }
-table th, table td { vertical-align: middle; }
-</style>

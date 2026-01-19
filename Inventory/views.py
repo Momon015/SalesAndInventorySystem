@@ -33,7 +33,7 @@ def material_list(request):
 
     
     total_items = materials.count()
-    out_of_stock = materials.filter(quantity__lte=0).count()
+    out_of_stock = materials.filter(quantity=0).count()
     
     """
     this allows to filter things without 
@@ -85,7 +85,9 @@ def material_create(request):
         form = MaterialForm(request.POST)
         
         if form.is_valid():
-            material = form.save()
+            material = form.save(commit=False)
+            material.name = material.name.title()
+            material.save()
             messages.success(request, f"{material.name} successfully created.")
             return redirect('material-list')
         else:

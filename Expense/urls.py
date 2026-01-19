@@ -25,5 +25,5 @@ urlpatterns = [
     path('', views.cart_discount_material, name='cart-discount-material'),
 
     # clear cart sessions
-    path('cart/clear/', views.clear_cart, name='clear-cart'),
+    path('view/cart/clear/', views.clear_cart, name='clear-cart'),
 ]

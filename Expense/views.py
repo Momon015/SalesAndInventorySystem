@@ -27,6 +27,10 @@ from core.models import StatusModel
 
 from decimal import Decimal
 
+from django.db import transaction
+from django.core.exceptions import ValidationError
+from urllib.parse import urlencode
+from django.views.decorators.http import require_POST
 # logging
 import logging
 
@@ -45,7 +49,7 @@ def purchase_list(request):
 def clear_cart(request):
     request.session['cart'] = {}
     request.session.modified = True
-    messages.success(request, "Cart has been reset.")
+    messages.success(request, "All items has been removed.")
     return redirect('view-cart')
 
 """clearing cart just in case there's a bug """
@@ -56,25 +60,49 @@ def add_to_cart(request, id):
     material_slug = material.slug
     
     material_key = str(material.id) 
-    if material_key in cart:
-        if cart[material_key]['quantity'] < material.quantity:
-            cart[material_key]['quantity'] += 1
-
-        else:
-            messages.warning(request, "You have reached the maximum stock for this item.")
     
-    else:
-        # first time adding to the cart.
-        cart[material_key] = {
-            'id': material.id,
-            'slug': material_slug,
-            'name': material.name,
-            'price': float(material.price),
-            'quantity': 1,
-            'discount': 0,
-        }
-        messages.success(request, f"{material.name} added to the cart.")
+    if material.quantity >= 1:
+        
+        if material_key in cart:
+            if cart[material_key]['quantity'] < material.quantity:
+                cart[material_key]['quantity'] += 1
+                messages.success(request, f"{material.name}'s quantity has increased.")
 
+            else:
+                messages.warning(request, f"Cannot add more {material.name}. Maximum available stock reached.")
+                
+    
+        else:
+            # first time adding to the cart.
+            cart[material_key] = {
+                'id': material.id,
+                'slug': material_slug,
+                'name': material.name,
+                'price': float(material.price),
+                'quantity': 1,
+                'discount': 0,
+            }
+            messages.success(request, f"{material.name} added to purchase.")
+    else:
+        messages.error(request, f"Cannot add {material.name} - Insufficient stock.")
+
+
+    """
+    Query with parameters, this allows to add items in the
+    purchase without resetting the pagination page.
+    """
+    query_params = {}
+    if request.GET.get('page'):
+        query_params['page'] = request.GET.get('page')
+    if request.GET.get('search'):
+        query_params['search'] = request.GET.get('search')
+    if request.GET.get('category'):
+        query_params['category'] = request.GET.get('category')
+    
+    url = reverse('material-list')
+    if query_params:
+        url += "?" + urlencode(query_params)
+    
     # LOGGING: add to cart
     logger.debug(f"Current Session Cart: {request.session.get('cart')}")
     
@@ -82,8 +110,16 @@ def add_to_cart(request, id):
     request.session['cart'] = cart
     request.session.modified = True
     
-    return redirect('material-list')
-    
+    # return redirect('material-list')
+    """
+    request.META['QUERY_STRING'] is the raw query string sent by the browser.
+    It is already URL-encoded (same format as urllib.parse.urlencode output),
+    so it can be safely appended to redirects to preserve pagination and filters.
+    """
+    # return redirect(f"{reverse('material-list')}?{request.META.get('QUERY_STRING', '')}")
+
+    return redirect(url)
+
 def view_cart(request):
     cart = request.session.get('cart', {})
     subtotal = 0
@@ -164,9 +200,13 @@ def confirm_purchase_summary(request):
     subtotal = 0
     total_discount = 0
     
-    status, created = StatusModel.objects.get_or_create(name='paid') # cash payment directly so automatically paid
-    purchase = Purchase.objects.create(total_cost=0, status=status)
-    
+    try: 
+        with transaction.atomic():
+            status, created = StatusModel.objects.get_or_create(name='paid') # cash payment directly so automatically paid
+            purchase = Purchase.objects.create(total_cost=0, status=status)
+    except ValidationError:
+        messages.error(request, f"Cannot add {material.name} - Insufficient stock.")
+        return redirect('material-list')
     for material_id, data in cart.items():
         material = get_object_or_404(Material, id=material_id)
         discount = data.get('discount', 0)
@@ -178,9 +218,8 @@ def confirm_purchase_summary(request):
         subtotal += item_total
         
         if material.quantity < quantity:
-            messages.warning(request, f"{material.name} is out of stock.")
-            purchase.delete()
-             
+            messages.warning(request, f"{material.name} is only {material.quantity}pc left.")
+        
         # reduce the material's stock 
         material.quantity -= quantity
         material.save()
@@ -261,12 +300,16 @@ def cart_edit_material(request, id):
     if request.method == 'POST':
         quantity = int(request.POST.get('quantity', 1))
         
-        if quantity < 1:
-            quantity = 1
+        if material.quantity >= quantity:
+        
+            if quantity < 1:
+                quantity = 1
             
-        cart[material_key]['quantity'] = quantity
-        messages.success(request, f"{material.name}'s quantity has been updated.")
-        request.session.modified = True
+            cart[material_key]['quantity'] = quantity
+            messages.success(request, f"{material.name}'s quantity has been updated.")
+            request.session.modified = True
+        else:
+            messages.error(request, f"Cannot add {material.name} - Insufficient stock.")
     
     return redirect('view-cart')
 
