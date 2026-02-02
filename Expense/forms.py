@@ -15,3 +15,15 @@ class PurchaseItemForm(ModelForm):
     class Meta:
         model = PurchaseItem
         fields = ['material', 'discount']
+
+class PurchaseFilterForm(forms.Form):
+    search = forms.CharField(required=False)
+    start_date = forms.DateField(required=False)
+    end_date = forms.DateField(required=False)
+    select_month = forms.CharField(required=False)
+    
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        

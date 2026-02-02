@@ -145,8 +145,8 @@ table th, table td { vertical-align: middle; }
     <!-- NEW: Create Purchase Record button -->
     <div class="mb-2 mb-lg-0">
       <a href="{% url 'view-cart' %}" class="btn btn-success btn-sm">
-        <i class="bi bi-receipt-cutoff me-1"></i>
-        Create Purchase Record
+        <i class="bi bi-file-text me-1"></i>
+          View Purchase Record
       </a>
     </div>
   </div>
@@ -190,6 +190,7 @@ table th, table td { vertical-align: middle; }
 
             <div class="d-flex gap-2">
               <button class="btn btn-outline-secondary btn-sm px-3" type="submit">
+                <i class="bi bi-funnel me-1"></i>
                 Filter
               </button>
               <a href="." class="btn btn-light border btn-sm px-3">
@@ -273,43 +274,53 @@ table th, table td { vertical-align: middle; }
           </table>
         </div>
 
-        <!-- Pagination -->
-        {% if page_obj and page_obj.paginator.num_pages > 1 %}
-        <div class="d-flex justify-content-center mt-4">
+       <!-- Pagination -->
+        {% if page_obj %}
+        <div class="d-flex justify-content-center py-3 pagination-wrapper">
           <nav>
-            <ul class="pagination">
+            <ul class="pagination pagination-sm mb-0">
               {% with q=request.GET.search cat=request.GET.category %}
-                {% if page_obj.has_previous %}
-                  <li class="page-item">
+
+                <!-- PREVIOUS -->
+                <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                  {% if page_obj.has_previous %}
                     <a class="page-link"
-                       href="?page={{ page_obj.previous_page_number }}{% if q %}&search={{ q }}{% endif %}{% if cat %}&category={{ cat }}{% endif %}">
+                      href="?page={{ page_obj.previous_page_number }}{% if q %}&search={{ q }}{% endif %}{% if cat %}&category={{ cat }}{% endif %}">
                       &laquo;
                     </a>
-                  </li>
-                {% endif %}
+                  {% else %}
+                    <span class="page-link">&laquo;</span>
+                  {% endif %}
+                </li>
 
+                <!-- PAGE NUMBERS -->
                 {% for page in page_obj.paginator.page_range %}
                   <li class="page-item {% if page == page_obj.number %}active{% endif %}">
                     <a class="page-link"
-                       href="?page={{ page }}{% if q %}&search={{ q }}{% endif %}{% if cat %}&category={{ cat }}{% endif %}">
+                      href="?page={{ page }}{% if q %}&search={{ q }}{% endif %}{% if cat %}&category={{ cat }}{% endif %}">
                       {{ page }}
                     </a>
                   </li>
                 {% endfor %}
 
-                {% if page_obj.has_next %}
-                  <li class="page-item">
+                <!-- NEXT -->
+                <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                  {% if page_obj.has_next %}
                     <a class="page-link"
-                       href="?page={{ page_obj.next_page_number }}{% if q %}&search={{ q }}{% endif %}{% if cat %}&category={{ cat }}{% endif %}">
+                      href="?page={{ page_obj.next_page_number }}{% if q %}&search={{ q }}{% endif %}{% if cat %}&category={{ cat }}{% endif %}">
                       &raquo;
                     </a>
-                  </li>
-                {% endif %}
+                  {% else %}
+                    <span class="page-link">&raquo;</span>
+                  {% endif %}
+                </li>
+
               {% endwith %}
             </ul>
           </nav>
         </div>
         {% endif %}
+
 
       </div>
     </div>

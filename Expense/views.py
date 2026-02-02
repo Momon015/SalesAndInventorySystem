@@ -18,7 +18,7 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth import update_session_auth_hash
 
 from Expense.models import PurchaseItem, Purchase
-from Expense.forms import PurchaseForm, PurchaseItemForm
+from Expense.forms import PurchaseForm, PurchaseItemForm, PurchaseFilterForm
 
 from Inventory.models import Material
 from Inventory.forms import MaterialForm
@@ -31,18 +31,121 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from urllib.parse import urlencode
 from django.views.decorators.http import require_POST
+
+from django.core.paginator import Paginator
+
+from django.db.models import Q
+from datetime import date, datetime
+import calendar
+from django.db.models import Sum, Avg
 # logging
 import logging
+
+
 
 # Create your views here.
 
 logger = logging.getLogger('Expense')
 
-def purchase_list(request):
-    purchases = Purchase.objects.filter()
+def purchase_history(request):
+    purchases = Purchase.objects.all().order_by('-created_at')
     
-    context = {'purchases': purchases}
-    return render(request, 'Expense/purchase_list.html', context)
+    # forms
+    form = PurchaseFilterForm(request.GET or None)
+    period = request.GET.get('period')
+    
+    # count, sum and purchased total cost.
+    total_count = purchases.count()
+    total_cost = purchases.purchase_total_cost()
+    average_cost = purchases.average_total_cost()
+    
+    if form.is_valid():
+        search = form.cleaned_data.get('search')
+        start_date = form.cleaned_data.get('start_date')
+        end_date = form.cleaned_data.get('end_date')
+        select_month = form.cleaned_data.get('select_month')
+
+        if search:
+            purchases = purchases.filter(
+                Q(line_count__iexact=search) |
+                Q(id__iexact=search) | 
+                Q(materials__quantity__iexact=search) |
+                Q(total_cost__icontains=search)
+            )
+
+        if select_month:
+            parsed_year, parsed_month = map(int, select_month.split("-"))
+            purchases = purchases.filter(purchase_date__month=parsed_month, purchase_date__year=parsed_year)
+            
+        """
+        if you are using request.GET.get for getting the
+        url DATE strings you need to convert it using
+        strptime/strftime before you can extract the year,
+        month, and day. The isocalendar() needs to be unpack 
+        to get the year, number of weeks, and weekday. I
+        intentionally made it to use form.cleaned_data and 
+        request.GET.get() for learning purposes only.
+        """
+            
+        if start_date and end_date:
+            purchases = purchases.filter(purchase_date__range=(start_date, end_date))
+            
+        """
+        This is for quick filter for today, this week, this month, and
+        this year using the timezone.now().
+        """
+        
+        now = timezone.now()
+        iso_year, iso_week, iso_weekday = now.isocalendar()
+        today = now.day
+        year = now.year
+        month = now.month
+        
+        last_year = iso_year - 1
+        
+        if period == 'last_week':
+            """ Get the last week for last year using date. """
+            
+            last_week_of_last_year = date(last_year, 12, 28).isocalendar()[1]
+
+            if iso_week == 1:
+                purchases = purchases.filter(purchase_date__week=last_week_of_last_year, purchase_date__year=last_year)
+            else:
+                purchases = purchases.filter(purchase_date__week=iso_week - 1, purchase_date__year=year)
+                
+        elif period == 'last_year':
+            purchases = purchases.filter(purchase_date__year=last_year)
+            
+        elif period == 'today':
+            purchases = purchases.filter(purchase_date__day=today, purchase_date__year=year, purchase_date__month=month)
+            
+        elif period == 'week':
+            purchases = purchases.filter(purchase_date__year=year, purchase_date__week=iso_week)
+            
+        elif period == 'month':
+            purchases = purchases.filter(purchase_date__year=year, purchase_date__month=month)
+
+        elif period == 'year':
+            purchases = purchases.filter(purchase_date__year=year)
+            
+        total_count = purchases.count()
+        total_cost = purchases.purchase_total_cost()
+        average_cost = purchases.average_total_cost()
+        
+    paginator = Paginator(purchases, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {'page_obj': purchases, 'page_obj': page_obj, 'total_count': total_count, 'total_cost': total_cost, 'average_cost': average_cost}
+    return render(request, 'Expense/purchase_history.html', context)
+
+def purchase_detail(request, purchase_id):
+    purchase = get_object_or_404(Purchase, id=purchase_id)
+    purchase_items = purchase.materials.select_related('material')
+    line_count = purchase_items.count()
+    
+    context = {'purchase': purchase, 'purchase_items': purchase_items, 'line_count': line_count}
+    return render(request, 'Expense/purchase_detail.html', context)
 
 """clearing cart just in case there's a bug """
 
@@ -186,7 +289,11 @@ def view_cart_summary(request):
             'discount': discount,
             'item_discount': item_discount,
         })
-
+        
+    # save the cart length in session
+    request.session['lines'] = len(cart_items)
+    request.session.modified = True
+    
     total_after_discount = max(subtotal - total_discount, 0)
     
     # LOGGING: View Cart Summary
@@ -197,6 +304,7 @@ def view_cart_summary(request):
 
 def confirm_purchase_summary(request):
     cart = request.session.get('cart', {})
+    lines = request.session.get('lines', 0)
     subtotal = 0
     total_discount = 0
     
@@ -233,6 +341,9 @@ def confirm_purchase_summary(request):
         
     # check if there's a discount
     total_after_discount = max(subtotal - total_discount, 0)
+    
+    # save purchase lines - cart length
+    purchase.line_count = lines
     
     # save the purchase object
     purchase.total_cost = total_after_discount
@@ -286,7 +397,7 @@ def cart_remove_materials(request, id):
     
     if material_key in cart:
         del cart[material_key]
-        messages.success(request, f"{material.name} has been removed from the cart.")
+        messages.success(request, f"{material.name} removed from the purchase record.")
          
     request.session.modified = True
     return redirect('view-cart')

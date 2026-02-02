@@ -6,12 +6,36 @@ from Inventory.models import Material
 
 from django.utils import timezone
 
+from django.db.models import Sum, Avg
+
 # Create your models here.
+
+"""
+This is a custom queryset for computing the average
+and the sum of the total cost make sure u save it to 
+the parent model use either objects(recommended) or 
+any other name so u can simply called Purchase.objects.
+<function_name>().
+"""
+
+class PurchaseQuerySet(models.QuerySet):
+    def purchase_total_cost(self):
+        return self.aggregate(monthly_cost=Sum('total_cost'))['monthly_cost'] or 0
+        
+    def average_total_cost(self):
+        return self.aggregate(monthly_average_cost=Avg('total_cost'))['monthly_average_cost'] or 0
+    
+
     
 class Purchase(TimeStampModel):
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     status = models.ForeignKey(StatusModel, on_delete=models.SET_NULL, null=True)
     is_paid = models.BooleanField(default=False)
+    line_count = models.PositiveIntegerField(default=0)
+    purchase_date = models.DateField(auto_now_add=True, null=True, db_index=True) # remove NULL when you reset the DB
+    
+    # save the custom queryset as_manager()
+    objects = PurchaseQuerySet.as_manager()
     
     def __str__(self):
         return f"Purchase ID: #{self.id} - {self.formatted_date}, Total Cost: {self.total_cost}"
@@ -35,8 +59,13 @@ class Purchase(TimeStampModel):
     
     @property
     def total_cost_per_purchase(self):
-        return sum(item.material_discount() for item in self.materials.all())
+        return sum(item.total_price_per_item for item in self.materials.all())
     
+    @property
+    def total_quantity_items(self):
+        return sum(item.quantity for item in self.materials.all())
+    
+    # ADMIN PANEL
     
     @property
     def total_discount(self):
@@ -49,7 +78,8 @@ class Purchase(TimeStampModel):
     @property
     def quantity_items(self):
         return [item.quantity for item in self.materials.all()]
-    
+
+
 
         
 class PurchaseItem(TimeStampModel):

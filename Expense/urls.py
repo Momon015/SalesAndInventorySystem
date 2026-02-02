@@ -5,7 +5,8 @@ from django.urls import path
 
 urlpatterns = [
     # purchase urls
-    path('purchase/materials-list/', views.purchase_list, name='purchase-list'),
+    path('view/purchase-history/', views.purchase_history, name='purchase-list'),
+    path('view/<int:purchase_id>/purchase-history/', views.purchase_detail, name='purchase-detail'),
     
     # cart sessions
     path('add-to-cart/<int:id>/', views.add_to_cart, name='add-cart'),

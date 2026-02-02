@@ -25,7 +25,7 @@ class PurchaseItemInline(admin.TabularInline):
     
     
 class PurchaseAdmin(admin.ModelAdmin):
-    list_display = ['id', 'show_purchase_items', 'show_quantity_items', 'total_cost', 'status', 'show_total_discount', 'is_paid', 'created_at']
+    list_display = ['id', 'show_purchase_items', 'show_quantity_items', 'total_cost', 'status', 'show_total_discount', 'is_paid', 'created_at', 'purchase_date']
     inlines = [PurchaseItemInline]
     
     
