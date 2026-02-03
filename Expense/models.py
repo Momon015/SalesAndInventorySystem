@@ -6,8 +6,10 @@ from Inventory.models import Material
 
 from django.utils import timezone
 
-from django.db.models import Sum, Avg
+from django.db.models import Sum, Avg, Value
 
+from django.db.models.functions import Coalesce
+from decimal import Decimal
 # Create your models here.
 
 """
@@ -20,10 +22,10 @@ any other name so u can simply called Purchase.objects.
 
 class PurchaseQuerySet(models.QuerySet):
     def purchase_total_cost(self):
-        return self.aggregate(monthly_cost=Sum('total_cost'))['monthly_cost'] or 0
+        return self.aggregate(monthly_cost=Coalesce(Sum('total_cost'), Value(Decimal('0'))))['monthly_cost']
         
     def average_total_cost(self):
-        return self.aggregate(monthly_average_cost=Avg('total_cost'))['monthly_average_cost'] or 0
+        return self.aggregate(monthly_average_cost=Coalesce(Avg('total_cost'), Value(Decimal('0'))))['monthly_average_cost']
     
 
     

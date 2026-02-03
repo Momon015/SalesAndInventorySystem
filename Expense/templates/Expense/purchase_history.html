@@ -321,7 +321,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <span class="fw-semibold"><i class="bi bi-graph-up-arrow me-1"></i>Period summary</span>
         </div>
         <div class="card-body small d-flex flex-column gap-2">
-          <div class="d-flex justify-content-between"><span class="text-muted">Total purchased </span><span class="fw-semibold">{{ total_count }}</span></div>
+          <div class="d-flex justify-content-between"><span class="text-muted">Total purchased </span><span class="fw-semibold">{{ total_count|default:"0" }}</span></div>
           <div class="d-flex justify-content-between"><span class="text-muted">Total cost</span><span class="fw-semibold text-success">₱{{ total_cost|floatformat:2|intcomma|default:"0.00"}}</span></div>
           <div class="d-flex justify-content-between"><span class="text-muted">Average per purchase</span><span class="fw-semibold">₱{{ average_cost|floatformat:2|intcomma|default:"0.00" }}</span></div>
           <hr class="my-2">

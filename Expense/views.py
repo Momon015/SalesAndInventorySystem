@@ -52,7 +52,7 @@ def purchase_history(request):
     
     # forms
     form = PurchaseFilterForm(request.GET or None)
-    period = request.GET.get('period')
+    
     
     # count, sum and purchased total cost.
     total_count = purchases.count()
@@ -64,7 +64,8 @@ def purchase_history(request):
         start_date = form.cleaned_data.get('start_date')
         end_date = form.cleaned_data.get('end_date')
         select_month = form.cleaned_data.get('select_month')
-
+        period = form.cleaned_data.get('period')
+        
         if search:
             purchases = purchases.filter(
                 Q(line_count__iexact=search) |
@@ -112,21 +113,19 @@ def purchase_history(request):
                 purchases = purchases.filter(purchase_date__week=last_week_of_last_year, purchase_date__year=last_year)
             else:
                 purchases = purchases.filter(purchase_date__week=iso_week - 1, purchase_date__year=year)
-                
-        elif period == 'last_year':
-            purchases = purchases.filter(purchase_date__year=last_year)
-            
-        elif period == 'today':
-            purchases = purchases.filter(purchase_date__day=today, purchase_date__year=year, purchase_date__month=month)
-            
-        elif period == 'week':
-            purchases = purchases.filter(purchase_date__year=year, purchase_date__week=iso_week)
-            
-        elif period == 'month':
-            purchases = purchases.filter(purchase_date__year=year, purchase_date__month=month)
-
-        elif period == 'year':
-            purchases = purchases.filter(purchase_date__year=year)
+        
+        else:
+            # for mapping period
+            period_map = {
+                "last_year": {'purchase_date__year': last_year},
+                "today": {'purchase_date__day': today},
+                "week": {"purchase_date__year": year, "purchase_date__week": iso_week},
+                "month": {"purchase_date__month": month, "purchase_date__year": year},
+                "year": {"purchase_date__year": year},
+            }
+            filter_kwargs = period_map.get(period)
+            if filter_kwargs:
+                purchases = purchases.filter(**filter_kwargs)
             
         total_count = purchases.count()
         total_cost = purchases.purchase_total_cost()

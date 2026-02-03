@@ -21,7 +21,7 @@ class PurchaseFilterForm(forms.Form):
     start_date = forms.DateField(required=False)
     end_date = forms.DateField(required=False)
     select_month = forms.CharField(required=False)
-    
+    period = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
