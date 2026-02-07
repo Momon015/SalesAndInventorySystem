@@ -10,6 +10,9 @@ from django.db.models import Sum, Avg, Value
 
 from django.db.models.functions import Coalesce
 from decimal import Decimal
+
+from user.models import User
+
 # Create your models here.
 
 """
@@ -111,3 +114,31 @@ class PurchaseItem(TimeStampModel):
     #     if self.discount:
     #         return self.total_price_per_item - self.discount
     #     return self.total_price_per_item
+
+
+class Preset(TimeStampModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='presets')
+    name = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=False)
+    
+
+    def __str__(self):
+        return self.name
+
+
+class PresetItem(models.Model):
+    class Meta:
+        unique_together = ('preset', 'material')
+        ordering = ['id']
+        
+    preset = models.ForeignKey(Preset, on_delete=models.CASCADE, related_name='preset_items')
+    material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name='preset_items')
+    quantity = models.PositiveIntegerField(default=1)
+    discount = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    
+    def __str__(self):
+        return f"{self.material} x {self.quantity} - Discount: {self.discount}"
+    
+    @property
+    def total_line_cost(self):
+        return self.material.price * self.quantity

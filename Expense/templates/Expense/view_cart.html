@@ -1,3 +1,8 @@
+{% extends 'main.html' %}
+{% load humanize %}
+
+{% block content %}
+
 <style>
 /* Toast container */
 #toast-container {
@@ -19,7 +24,6 @@
   font-size: 0.85rem;
   font-weight: 500;
   box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-
   opacity: 0;
   transform: translateY(-10px);
   animation: toast-in 0.35s ease forwards,
@@ -76,55 +80,42 @@ input[type=number] {
     -moz-appearance: textfield;
 }
 
-/* existing styles ... */
-
+/* Discount column width */
 .discount-col {
-  width: 80px;          /* same as input width */
+  width: 80px;
   text-align: center;
 }
 
 /* Footer under the order-lines table */
 .border-top .btn {
-  margin-bottom: 0; /* remove space between button and border below */
+  margin-bottom: 0;
 }
-
-
 </style>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const toasts = document.querySelectorAll(".toast-message");
-    toasts.forEach(toast => {
-      setTimeout(() => {
-        toast.remove();
-      }, 3200); // must match animation timing
-    });
-  });
+document.addEventListener("DOMContentLoaded", function () {
+  // Toast removal
+  const toasts = document.querySelectorAll(".toast-message");
+  toasts.forEach(toast => setTimeout(() => toast.remove(), 3200));
+
+  // Advanced filter panel behavior (if reused here)
+  const filterDetails = document.querySelector("details");
+  if (filterDetails) {
+    const filterForm = filterDetails.querySelector("#filterForm");
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("month") || params.get("start_date") || params.get("end_date") || params.get("search")) {
+      filterDetails.setAttribute("open", "");
+    }
+
+    if (filterForm) {
+      filterForm.addEventListener("click", function(e){ e.stopPropagation(); });
+      const resetBtn = filterForm.querySelector("a.btn-light");
+      if (resetBtn) resetBtn.addEventListener("click", e => e.stopPropagation());
+    }
+  }
+});
 </script>
-
-{% extends 'main.html' %}
-
-<!-- FLASH MESSAGES -->
-{% if messages %}
-<div class="toast-container" aria-live="polite" aria-atomic="true">
-  {% for message in messages %}
-    <div class="toast-message toast-{{ message.tags }}">
-      {% if message.tags == "error" %}
-        <i class="bi bi-exclamation-circle-fill me-2"></i>
-      {% elif message.tags == "success" %}
-        <i class="bi bi-check-circle-fill me-2"></i>
-      {% elif message.tags == "info" %}
-        <i class="bi bi-info-circle-fill me-2"></i>
-      {% elif message.tags == "warning" %}
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      {% endif %}
-      {{ message }}
-    </div>
-  {% endfor %}
-</div>
-{% endif %}
-
-{% block content %}
 
 <!-- FLASH MESSAGES -->
 {% if messages %}
@@ -267,26 +258,22 @@ input[type=number] {
             </table>
           </div>
 
-          <form id="discountForm" method="POST" action="{% url 'cart-discount-material' %}">
+          <form id="discountForm" method="POST" action="{% url 'cart-discount-material' %}" autocomplete="off">
             {% csrf_token %}
             <div class="border-top px-1 px-lg-2 pt-2 pb-0 text-end">
-              {% comment %} <a href="{% url 'clear-cart' %}"
-                 class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-trash3 me-1"></i>
-                Clear order
-              </a> {% endcomment %}
               <button class="btn btn-warning btn-sm fw-semibold">
                 Apply discounts
               </button>
             </div>
           </form>
-{% comment %} p-2 text-end {% endcomment %}
         </div>
       </div>
     </div>
 
-    <!-- RIGHT: MINI RECEIPT + TOTALS -->
+    <!-- RIGHT: MINI RECEIPT + TOTALS + PRESETS -->
     <div class="col-lg-4">
+
+      <!-- Receipt preview -->
       <div class="card border-0 shadow-sm rounded-4 mb-3">
         <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
@@ -327,11 +314,11 @@ input[type=number] {
           </div>
 
           <div class="d-grid gap-2">
-              <a href="{% url 'clear-cart' %}"
-                 class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-trash3 me-1"></i>
-                Clear order
-              </a>
+            <a href="{% url 'clear-cart' %}"
+               class="btn btn-outline-danger btn-sm">
+              <i class="bi bi-trash3 me-1"></i>
+              Clear order
+            </a>
             <a href="{% url 'view-checkout-summary' %}"
                class="btn btn-success btn-lg">
               <i class="bi bi-check2-circle me-1"></i>
@@ -341,7 +328,8 @@ input[type=number] {
         </div>
       </div>
 
-      <div class="card border-0 shadow-sm rounded-4">
+      <!-- Session info -->
+      <div class="card border-0 shadow-sm rounded-4 mb-3">
         <div class="card-body small">
           <div class="fw-semibold mb-2">Session info</div>
           <div class="d-flex justify-content-between">
@@ -354,11 +342,55 @@ input[type=number] {
           </div>
         </div>
       </div>
-    </div>
+
+      <!-- Presets -->
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body small">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-semibold">Presets</span>
+            <a href="{% url 'preset-list' %}" class="small text-decoration-none">
+              <i class="bi bi-list-ul me-1"></i>
+              View presets
+            </a>
+          </div>
+
+          <form method="POST" id="presetForm" autocomplete="off" action="{% url 'save-items' %}">
+            {% csrf_token %}
+            <div class="mb-2">
+              <label for="presetName" class="form-label small text-muted mb-1">
+                Preset title
+              </label>
+              <input type="text"
+                     id="presetName"
+                     name="name"
+                     class="form-control form-control-sm"
+                     placeholder="e.g. Weekly market run">
+            </div>
+            <div class="form-check mb-2">
+              <input class="form-check-input"
+                     type="checkbox"
+                     value="checkbox"
+                     id="presetSaveLater"
+                     name="checkbox">
+              <label class="form-check-label small" for="presetSaveLater">
+                Save for future use
+              </label>
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-bookmark-check me-1"></i>
+                Save as preset
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div> <!-- /RIGHT -->
 
   </div>
   {% else %}
-  <!-- EMPTY -->
+  <!-- EMPTY STATE -->
   <div class="d-flex flex-column align-items-center justify-content-center py-5">
     <div class="card shadow-sm text-center p-4" style="max-width: 400px;">
       <div class="mb-3"><i class="bi bi-receipt fs-1 text-primary"></i></div>
