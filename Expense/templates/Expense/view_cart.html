@@ -196,7 +196,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <tr>
                   <td class="ps-3 ps-lg-4">
                     <div class="fw-semibold">{{ item.material }}</div>
-                    <div class="small text-muted">Code: {{ item.code|default:"—" }}</div>
+                    <div class="small text-muted">Material ID: {{ item.id|default:"—" }}</div>
                   </td>
                   <td class="text-center">₱{{ item.price|floatformat:2 }}</td>
 
