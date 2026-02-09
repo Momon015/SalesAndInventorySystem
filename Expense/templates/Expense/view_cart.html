@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", function () {
     <!-- LEFT: ORDER LINES -->
     <div class="col-lg-8">
       <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center px-3 px-lg-4 py-2">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center px-2 px-lg-2 py-2">
           <div class="d-flex align-items-center gap-2">
             <span class="badge text-bg-dark rounded-pill">{{ cart_items|length }}</span>
             <h6 class="mb-0 fw-semibold">Order lines</h6>
@@ -260,7 +260,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
           <form id="discountForm" method="POST" action="{% url 'cart-discount-material' %}" autocomplete="off">
             {% csrf_token %}
-            <div class="border-top px-1 px-lg-2 pt-2 pb-0 text-end">
+            <div class="border-top px-3 px-lg-2 pt-2 pb-2 text-end">
               <button class="btn btn-warning btn-sm fw-semibold">
                 Apply discounts
               </button>
