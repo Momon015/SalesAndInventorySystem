@@ -1,0 +1,160 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+<style>
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Chrome, Edge, Safari */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Generic */
+input[type=number] {
+  appearance: textfield;
+}
+</style>
+
+<div class="container-fluid py-3 py-lg-4">
+
+  <!-- HEADER -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+    <div>
+      <h4 class="fw-semibold mb-1 d-flex align-items-center gap-2">
+        <i class="bi bi-person-gear text-primary"></i>
+        Edit employee
+      </h4>
+      <small class="text-muted">
+        Update details for {{ employee.name }}.
+      </small>
+    </div>
+    <a href="{% url 'employee-list' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>
+      Back to employees
+    </a>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-xl-5">
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-white border-bottom">
+          <h6 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+            <i class="bi bi-clipboard-check text-primary"></i>
+            Employee information
+          </h6>
+        </div>
+
+        <div class="card-body">
+          <form method="POST" novalidate autocomplete='off'>
+            {% csrf_token %}
+
+            <!-- Name -->
+            <div class="mb-3">
+              <label for="id_name" class="form-label fw-semibold small text-uppercase text-muted">
+                Name
+              </label>
+              <input type="text"
+                     name="name"
+                     class="form-control form-control-sm {% if form.name.errors %}is-invalid{% endif %}"
+                     id="id_name"
+                     value="{{ form.name.value|default_if_none:'' }}"
+                     placeholder="e.g. Juan Dela Cruz">
+              {% if form.name.errors %}
+              <div class="invalid-feedback">
+                {{ form.name.errors.0 }}
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Daily rate with + / − controls, no spinners -->
+            <div class="mb-3">
+              <label for="id_daily_rate" class="form-label fw-semibold small text-uppercase text-muted">
+                Daily rate (₱)
+              </label>
+
+              <div class="d-flex align-items-center gap-1">
+                <!-- − button -->
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        style="width:32px;"
+                        onclick="
+                          (function(){
+                            const input = document.getElementById('id_daily_rate');
+                            let value = parseFloat(input.value || 0);
+                            value = isNaN(value) ? 0 : value;
+                            value = Math.max(0, value - 50);
+                            input.value = value.toFixed(2);
+                          })();
+                        ">
+                  −
+                </button>
+
+                <!-- Input with currency prefix -->
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">₱</span>
+                  <input type="number"
+                         step="0.01"
+                         min="0"
+                         name="daily_rate"
+                         class="form-control form-control-sm {% if form.daily_rate.errors %}is-invalid{% endif %}"
+                         id="id_daily_rate"
+                         value="{{ form.daily_rate.value|default_if_none:'' }}"
+                         placeholder="e.g. 600.00">
+                </div>
+
+                <!-- + button -->
+                <button type="button"
+                        class="btn btn-outline-secondary btn-sm"
+                        style="width:32px;"
+                        onclick="
+                          (function(){
+                            const input = document.getElementById('id_daily_rate');
+                            let value = parseFloat(input.value || 0);
+                            value = isNaN(value) ? 0 : value;
+                            value = value + 50;
+                            input.value = value.toFixed(2);
+                          })();
+                        ">
+                  +
+                </button>
+              </div>
+
+              <div class="form-text">
+                Used when computing payroll based on days worked.
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+              <a href="{% url 'employee-detail' employee.id %}" class="btn btn-outline-secondary btn-sm">
+                Cancel
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check2-circle me-1"></i>
+                Save changes
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

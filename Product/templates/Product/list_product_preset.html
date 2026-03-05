@@ -122,13 +122,13 @@ input[type=number] {
         Preset bundles
       </h4>
       <small class="text-muted">
-        Saved item groups you can quickly add to a purchase.
+        Saved product items you can quickly add to a sale.
       </small>
     </div>
     <div class="d-flex flex-wrap gap-2">
       <a href="{% url 'view-cart' %}" class="btn btn-success btn-sm">
         <i class="bi bi-receipt me-1"></i>
-        View Purchase Record
+        View Sales Record
       </a>
     </div>
   </div>
@@ -157,7 +157,7 @@ input[type=number] {
 
               <!-- Total Items -->
               <td class="text-center">
-                {{ preset.preset_items.count }}
+                {{ preset.product_preset_items.count }}
               </td>
 
               <!-- Created Date -->
@@ -169,25 +169,25 @@ input[type=number] {
               <td class="text-end">
                 <div class="btn-group btn-group-sm">
                   <!-- Add to current cart -->
-                  <a href="{% url 'material-add-preset-to-cart' preset.id %}"
+                  <a href="{% url 'product-preset-add-to-sale' preset.id %}"
                      class="btn btn-outline-secondary"
                      title="Add to current purchase">
                     <i class="bi bi-plus"></i>
                   </a>
                   <!-- View preset detail -->
-                  <a href="{% url 'material-preset-detail' preset.id %}"
+                  <a href="{% url 'product-preset-detail' preset.id %}"
                      class="btn btn-outline-secondary"
                      title="View details">
                     <i class="bi bi-eye"></i>
                   </a>
                   <!-- Edit preset items/name -->
-                  <a href="{% url 'material-edit-preset' preset.id %}"
+                  <a href="{% url 'product-edit-preset' preset.id %}"
                      class="btn btn-outline-secondary"
                      title="Edit preset">
                     <i class="bi bi-pencil-square"></i>
                   </a>
                   <!-- Delete preset items/name -->
-                  <a href="{% url 'material-delete-preset' preset.id %}"
+                  <a href="{% url 'product-delete-preset' preset.id %}"
                      class="btn btn-outline-secondary"
                      title="Delete preset">
                     <i class="bi bi-trash "></i>
@@ -208,50 +208,54 @@ input[type=number] {
 
       {% if page_obj %}
         <div class="d-flex justify-content-center py-3">
-          <nav>
+          <nav aria-label="Preset pagination">
             <ul class="pagination pagination-sm mb-0">
 
               {# Previous arrow #}
-              {% if page_obj.has_previous %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-                  &laquo;
-                </a>
+              <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                {% if page_obj.has_previous %}
+                  <a class="page-link"
+                    href="?page={{ page_obj.previous_page_number }}"
+                    aria-label="Previous page">
+                    &laquo;
+                  </a>
+                {% else %}
+                  <span class="page-link" aria-disabled="true" aria-label="Previous page">
+                    &laquo;
+                  </span>
+                {% endif %}
               </li>
-              {% else %}
-              <li class="page-item disabled">
-                <span class="page-link" aria-label="Previous" aria-disabled="true">
-                  &laquo;
-                </span>
-              </li>
-              {% endif %}
 
               {# Page numbers #}
               {% for p in page_obj.paginator.page_range %}
-              <li class="page-item {% if p == page_obj.number %}active{% endif %}">
-                <a class="page-link" href="?page={{ p }}">{{ p }}</a>
-              </li>
+                <li class="page-item {% if p == page_obj.number %}active{% endif %}">
+                  <a class="page-link"
+                    href="?page={{ p }}">
+                    {{ p }}
+                  </a>
+                </li>
               {% endfor %}
 
               {# Next arrow #}
-              {% if page_obj.has_next %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-                  &raquo;
-                </a>
+              <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                {% if page_obj.has_next %}
+                  <a class="page-link"
+                    href="?page={{ page_obj.next_page_number }}"
+                    aria-label="Next page">
+                    &raquo;
+                  </a>
+                {% else %}
+                  <span class="page-link" aria-disabled="true" aria-label="Next page">
+                    &raquo;
+                  </span>
+                {% endif %}
               </li>
-              {% else %}
-              <li class="page-item disabled">
-                <span class="page-link" aria-label="Next" aria-disabled="true">
-                  &raquo;
-                </span>
-              </li>
-              {% endif %}
 
             </ul>
           </nav>
         </div>
-        {% endif %}
+      {% endif %}
+
 
     </div>
   </div>

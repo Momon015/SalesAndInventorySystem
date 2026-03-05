@@ -1,10 +1,11 @@
 from django.contrib import admin
-from Expense.models import PurchaseItem, Purchase, Preset, PresetItem
+from Expense.models import PurchaseItem, Purchase, MaterialPreset, MaterialPresetItem, Employee
 
 # Register your models here.
 admin.site.register(PurchaseItem)
-admin.site.register(Preset)
-admin.site.register(PresetItem)
+admin.site.register(MaterialPreset)
+admin.site.register(MaterialPresetItem)
+admin.site.register(Employee)
 # admin.site.register(Purchase)
 
 class PurchaseItemInline(admin.TabularInline):

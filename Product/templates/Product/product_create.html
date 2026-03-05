@@ -22,7 +22,6 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
-/* POS-style tweaks */
 .card-pos {
   border-radius: 1rem;
 }
@@ -77,9 +76,7 @@ input[readonly] {
       <div class="card border-0 shadow-sm rounded-4 card-pos">
         <div class="card-header bg-white border-bottom px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
-            <span class="badge text-bg-primary rounded-pill">
-              New
-            </span>
+            <span class="badge text-bg-primary rounded-pill">New</span>
             <h6 class="mb-0 fw-semibold">Product details</h6>
           </div>
           <small class="text-muted d-none d-sm-inline">
@@ -91,119 +88,136 @@ input[readonly] {
           <form method="POST" class="row g-3">
             {% csrf_token %}
 
-            {# NAME full width #}
-            {% if form.name %}
-            <div class="col-12">
+            <!-- Row 1: Name + Category -->
+            <div class="col-md-7">
               <label for="{{ form.name.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
                 {{ form.name.label }}
                 {% if form.name.field.required %}<span class="text-danger">*</span>{% endif %}
               </label>
               {{ form.name }}
               {% if form.name.help_text %}
-                <div class="helper-text mt-1">
-                  {{ form.name.help_text }}
-                </div>
+                <div class="helper-text mt-1">{{ form.name.help_text }}</div>
               {% endif %}
               {% if form.name.errors %}
-                <div class="text-danger mt-1 small">
-                  {{ form.name.errors|striptags }}
-                </div>
+                <div class="text-danger mt-1 small">{{ form.name.errors|striptags }}</div>
               {% endif %}
             </div>
-            {% endif %}
 
-            {# CATEGORY + SELLING PRICE aligned #}
-            <div class="col-md-6">
+            <div class="col-md-5">
               <label for="{{ form.category.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
                 {{ form.category.label }}
                 {% if form.category.field.required %}<span class="text-danger">*</span>{% endif %}
               </label>
               {{ form.category }}
               {% if form.category.help_text %}
-                <div class="helper-text mt-1">
-                  {{ form.category.help_text }}
-                </div>
+                <div class="helper-text mt-1">{{ form.category.help_text }}</div>
               {% endif %}
               {% if form.category.errors %}
-                <div class="text-danger mt-1 small">
-                  {{ form.category.errors|striptags }}
-                </div>
+                <div class="text-danger mt-1 small">{{ form.category.errors|striptags }}</div>
               {% endif %}
             </div>
 
-            <div class="col-md-6">
-              <label for="{{ form.selling_price.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
-                {{ form.selling_price.label }}
-                {% if form.selling_price.field.required %}<span class="text-danger">*</span>{% endif %}
+            <!-- Row 2: Description full width -->
+            <div class="col-12">
+              <label for="{{ form.description.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
+                {{ form.description.label }}
+                {% if form.description.field.required %}<span class="text-danger">*</span>{% endif %}
               </label>
-              <div class="input-group input-group-sm">
-                <button type="button"
-                        class="btn btn-outline-secondary"
-                        onclick="changeValue('{{ form.selling_price.id_for_label }}', -1)">
-                  −
-                </button>
-                {{ form.selling_price }}
-                <button type="button"
-                        class="btn btn-outline-secondary"
-                        onclick="changeValue('{{ form.selling_price.id_for_label }}', 1)">
-                  +
-                </button>
-              </div>
-              {% if form.selling_price.help_text %}
-                <div class="helper-text mt-1">
-                  {{ form.selling_price.help_text }}
-                </div>
+              {{ form.description }}
+              {% if form.description.help_text %}
+                <div class="helper-text mt-1">{{ form.description.help_text }}</div>
               {% endif %}
-              {% if form.selling_price.errors %}
-                <div class="text-danger mt-1 small">
-                  {{ form.selling_price.errors|striptags }}
-                </div>
+              {% if form.description.errors %}
+                <div class="text-danger mt-1 small">{{ form.description.errors|striptags }}</div>
               {% endif %}
             </div>
 
-            {# OTHER FIELDS loop, skipping ones handled above #}
-            {% for field in form %}
-              {% if field.name not in 'name category selling_price' %}
-                <div class="col-12{% if field.field.widget.input_type == 'number' %} col-md-6{% endif %}">
-                  <label for="{{ field.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
-                    {{ field.label }}
-                    {% if field.field.required %}
-                      <span class="text-danger">*</span>
-                    {% endif %}
+            <!-- Row 3: Inventory section -->
+            <div class="col-12">
+              <div class="form-section-title d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-box-seam"></i> Inventory
+              </div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="{{ form.prepared_quantity.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
+                    {{ form.prepared_quantity.label }}
+                    {% if form.prepared_quantity.field.required %}<span class="text-danger">*</span>{% endif %}
                   </label>
-
-                  {% if field.field.widget.input_type == "number" %}
-                    <div class="input-group input-group-sm">
-                      <button type="button"
-                              class="btn btn-outline-secondary"
-                              onclick="changeValue('{{ field.id_for_label }}', -1)">
-                        −
-                      </button>
-                      {{ field }}
-                      <button type="button"
-                              class="btn btn-outline-secondary"
-                              onclick="changeValue('{{ field.id_for_label }}', 1)">
-                        +
-                      </button>
-                    </div>
-                  {% else %}
-                    {{ field }}
-                  {% endif %}
-
-                  {% if field.help_text %}
-                    <div class="helper-text mt-1">
-                      {{ field.help_text }}
-                    </div>
-                  {% endif %}
-
-                  {% if field.errors %}
-                    <div class="text-danger mt-1 small">
-                      {{ field.errors|striptags }}
-                    </div>
+                  <div class="input-group input-group-sm">
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="changeValue('{{ form.prepared_quantity.id_for_label }}', -1)">−</button>
+                    {{ form.prepared_quantity }}
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="changeValue('{{ form.prepared_quantity.id_for_label }}', 1)">+</button>
+                  </div>
+                  {% if form.prepared_quantity.errors %}
+                    <div class="text-danger mt-1 small">{{ form.prepared_quantity.errors|striptags }}</div>
                   {% endif %}
                 </div>
-              {% endif %}
-            {% endfor %}
+
+                <div class="col-md-6">
+                  <label for="{{ form.default_quantity.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
+                    {{ form.default_quantity.label }}
+                    {% if form.default_quantity.field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+                  <div class="input-group input-group-sm">
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="changeValue('{{ form.default_quantity.id_for_label }}', -1)">−</button>
+                    {{ form.default_quantity }}
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="changeValue('{{ form.default_quantity.id_for_label }}', 1)">+</button>
+                  </div>
+                  <div class="helper-text mt-1">Used when restoring stock to default.</div>
+                  {% if form.default_quantity.errors %}
+                    <div class="text-danger mt-1 small">{{ form.default_quantity.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 4: Pricing section -->
+            <div class="col-12">
+              <div class="form-section-title d-flex align-items-center gap-2 mb-2">
+                <i class="bi bi-cash-coin"></i> Pricing
+              </div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="{{ form.cost_price.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
+                    {{ form.cost_price.label }}
+                    {% if form.cost_price.field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">₱</span>
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="changeValue('{{ form.cost_price.id_for_label }}', -1)">−</button>
+                    {{ form.cost_price }}
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="changeValue('{{ form.cost_price.id_for_label }}', 1)">+</button>
+                  </div>
+                  {% if form.cost_price.errors %}
+                    <div class="text-danger mt-1 small">{{ form.cost_price.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                  <label for="{{ form.selling_price.id_for_label }}" class="form-label small fw-semibold text-muted text-uppercase">
+                    {{ form.selling_price.label }}
+                    {% if form.selling_price.field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">₱</span>
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="changeValue('{{ form.selling_price.id_for_label }}', -1)">−</button>
+                    {{ form.selling_price }}
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="changeValue('{{ form.selling_price.id_for_label }}', 1)">+</button>
+                  </div>
+                  {% if form.selling_price.errors %}
+                    <div class="text-danger mt-1 small">{{ form.selling_price.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
 
             <!-- Actions -->
             <div class="col-12 d-flex justify-content-between align-items-center pt-3 border-top mt-2">
@@ -245,6 +259,7 @@ input[readonly] {
           <ul class="helper-text ps-3 mb-0">
             <li>Set a reorder level below your usual quantity on hand.</li>
             <li>Use cost and selling price consistently for margin reports.</li>
+            <li><strong>Default quantity</strong> is used to restore stock when needed.</li>
           </ul>
         </div>
       </div>

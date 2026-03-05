@@ -42,11 +42,11 @@
         <i class="bi bi-box-seam me-1 text-primary"></i>
         Edit Preset (POS)
       </h4>
-      <small class="text-muted">Adjust quantities and discounts using + / − buttons</small>
+      <small class="text-muted">Adjust quantities using + / − buttons</small>
     </div>
   </div>
 
-  <form method="POST" action="{% url 'material-edit-preset' preset.id %}">
+  <form method="POST" action="{% url 'product-edit-preset' preset.id %}">
     {% csrf_token %}
 
     <!-- PRESET INFO CARD -->
@@ -56,7 +56,7 @@
           <label class="small text-muted mb-1">Preset name</label>
           <input type="text"
                 class="form-control form-control-sm"
-                name="preset_{{ preset.id }}"
+                name="new_preset_name_{{ preset.id }}"
                 value="{{ preset.name }}"
                 placeholder="e.g. Weekly delivery bundle">
         </div>
@@ -78,7 +78,7 @@
           Items in this preset
         </span>
         <small class="text-muted d-none d-sm-inline">
-          POS-style controls for quantity and per-item discount
+          POS-style controls for quantity.
         </small>
       </div>
       <div class="card-body p-0">
@@ -88,59 +88,42 @@
               <tr>
                 <th class="pos-item">Item</th>
                 <th class="pos-quantity">Quantity</th>
-                <th class="pos-discount">Discount</th>
               </tr>
             </thead>
             <tbody>
-              {% for item in items %}
+              {% for item in preset_items %}
               <tr>
-                <!-- ITEM NAME (left) -->
+                <!-- ITEM NAME -->
                 <td class="pos-item" style="min-width: 200px;">
-                  <div class="fw-semibold">{{ item.material.name }}</div>
+                  <div class="fw-semibold">{{ item.product.name }}</div>
                   <div class="small text-muted">
-                    Material ID: {{ item.material.id }}
+                    Product ID: {{ item.product.id }}
                   </div>
                 </td>
 
-                <!-- QUANTITY (center) -->
+                <!-- QUANTITY -->
                 <td class="pos-quantity">
                   <div class="d-inline-flex align-items-center">
                     <button type="button"
                             class="btn btn-outline-secondary btn-sm qty-btn"
-                            data-target="quantity_{{ item.id }}" data-step="-1">−</button>
+                            data-target="new_product_quantity_{{ item.product.id }}" data-step="-1">−</button>
                     <input type="number"
                           class="form-control form-control-sm text-center no-spinner fw-semibold mx-1"
-                          name="quantity_{{ item.id }}"
+                          name="new_product_quantity_{{ item.product.id }}"
                           value="{{ item.quantity }}"
                           min="1" readonly>
                     <button type="button"
                             class="btn btn-outline-secondary btn-sm qty-btn"
-                            data-target="quantity_{{ item.id }}" data-step="1">+</button>
+                            data-target="new_product_quantity_{{ item.product.id }}" data-step="1">+</button>
                   </div>
                 </td>
 
-                <!-- DISCOUNT (right) -->
-                <td class="pos-discount">
-                  <div class="d-inline-flex align-items-center justify-content-end w-100">
-                    <button type="button"
-                            class="btn btn-outline-secondary btn-sm discount-btn"
-                            data-target="discount_{{ item.id }}" data-step="-1">−</button>
-                    <input type="number"
-                          name="discount_{{ item.id }}"
-                          class="form-control form-control-sm text-center no-spinner mx-1"
-                          min="0" step="1"
-                          value="{{ item.discount|floatformat:0 }}"
-                          readonly>
-                    <button type="button"
-                            class="btn btn-outline-secondary btn-sm discount-btn"
-                            data-target="discount_{{ item.id }}" data-step="1">+</button>
-                  </div>
-                </td>
+
               </tr>
               {% empty %}
               <tr>
                 <td colspan="3" class="text-center py-4 text-muted">
-                  No saved materials found for this preset.
+                  No saved products found for this preset.
                 </td>
               </tr>
               {% endfor %}
@@ -152,7 +135,7 @@
 
     <!-- SAVE / CANCEL -->
     <div class="d-flex justify-content-end gap-2 mt-3">
-      <a href="{% url 'material-preset-detail' preset.id %}" class="btn btn-light border btn-sm">
+      <a href="{% url 'product-preset-detail' preset.id %}" class="btn btn-light border btn-sm">
         Cancel
       </a>
       <button type="submit" class="btn btn-sm btn-primary">

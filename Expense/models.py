@@ -115,23 +115,20 @@ class PurchaseItem(TimeStampModel):
     #         return self.total_price_per_item - self.discount
     #     return self.total_price_per_item
 
-
-class Preset(TimeStampModel):
+class MaterialPreset(TimeStampModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='presets')
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=False)
     
-
     def __str__(self):
         return self.name
 
-
-class PresetItem(models.Model):
+class MaterialPresetItem(models.Model):
     class Meta:
         unique_together = ('preset', 'material')
         ordering = ['id']
         
-    preset = models.ForeignKey(Preset, on_delete=models.CASCADE, related_name='preset_items')
+    preset = models.ForeignKey(MaterialPreset, on_delete=models.CASCADE, related_name='preset_items')
     material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name='preset_items')
     quantity = models.PositiveIntegerField(default=1)
     discount = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
@@ -142,3 +139,13 @@ class PresetItem(models.Model):
     @property
     def total_line_cost(self):
         return self.material.price * self.quantity
+ 
+class EmployeeQuerySet(models.QuerySet):
+    def total_daily_rate(self):
+        return self.aggregate(total_daily_rate=Sum('daily_rate'))['total_daily_rate'] or 0
+    
+class Employee(TimeStampModel):
+    name = models.CharField(max_length=255, unique=True)
+    daily_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
+    objects = EmployeeQuerySet.as_manager()

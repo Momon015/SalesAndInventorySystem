@@ -75,9 +75,7 @@ input[type=number] {
       <div class="card border-0 shadow-sm rounded-4">
         <div class="card-header bg-white border-bottom px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
-            <span class="badge text-bg-primary rounded-pill">
-              Edit
-            </span>
+            <span class="badge text-bg-primary rounded-pill">Edit</span>
             <h6 class="mb-0 fw-semibold">Product information</h6>
           </div>
           <small class="text-muted d-none d-sm-inline">
@@ -86,115 +84,145 @@ input[type=number] {
         </div>
 
         <div class="card-body px-3 px-lg-4 py-3">
-          <form method="POST" class="row g-4" autocomplete="off">
+          <form method="POST" class="row g-3" autocomplete="off">
             {% csrf_token %}
 
-            <!-- Basic info (left) -->
+            <!-- Row 1: Name + Category -->
             <div class="col-md-7">
-              <div class="mb-2 section-title">Product details</div>
-              {% for field in form %}
-                {% if field.name not in "stock cost_price selling_price" %}
-                  <div class="mb-3">
-                    <label for="{{ field.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
-                      {{ field.label }}
-                      {% if field.field.required %}
-                        <span class="text-danger">*</span>
-                      {% endif %}
-                    </label>
-                    {{ field }}
-                    {% if field.help_text %}
-                      <div class="form-text small">{{ field.help_text }}</div>
-                    {% endif %}
-                    {% if field.errors %}
-                      <div class="text-danger mt-1 small">
-                        {{ field.errors|striptags }}
-                      </div>
-                    {% endif %}
-                  </div>
-                {% endif %}
-              {% endfor %}
+              <label for="{{ form.name.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
+                {{ form.name.label }}
+                {% if form.name.field.required %}<span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ form.name }}
+              {% if form.name.errors %}
+                <div class="text-danger mt-1 small">{{ form.name.errors|striptags }}</div>
+              {% endif %}
             </div>
 
-            <!-- Inventory & pricing (right inside main card) -->
             <div class="col-md-5">
-              <div class="border rounded-3 p-3 mb-3 bg-light">
-                <div class="mb-2 section-title d-flex align-items-center gap-2">
-                  <i class="bi bi-box-seam"></i> Inventory
+              <label for="{{ form.category.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
+                {{ form.category.label }}
+                {% if form.category.field.required %}<span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ form.category }}
+              {% if form.category.errors %}
+                <div class="text-danger mt-1 small">{{ form.category.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Row 2: Description (full width) -->
+            <div class="col-12">
+              <label for="{{ form.description.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
+                {{ form.description.label }}
+                {% if form.description.field.required %}<span class="text-danger">*</span>{% endif %}
+              </label>
+              {{ form.description }}
+              {% if form.description.help_text %}
+                <div class="form-text small">{{ form.description.help_text }}</div>
+              {% endif %}
+              {% if form.description.errors %}
+                <div class="text-danger mt-1 small">{{ form.description.errors|striptags }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Row 3: Prepared Quantity + Default Quantity -->
+            <div class="col-12">
+              <div class="mb-2 section-title d-flex align-items-center gap-2">
+                <i class="bi bi-box-seam"></i> Inventory
+              </div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="{{ form.prepared_quantity.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
+                    {{ form.prepared_quantity.label }}
+                    {% if form.prepared_quantity.field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+                  <div class="input-group">
+                    <button type="button" class="btn btn-outline-secondary btn-stepper"
+                            onclick="changeValue('{{ form.prepared_quantity.id_for_label }}', -1, true)">−</button>
+                    {{ form.prepared_quantity }}
+                    <button type="button" class="btn btn-outline-secondary btn-stepper"
+                            onclick="changeValue('{{ form.prepared_quantity.id_for_label }}', 1, true)">+</button>
+                  </div>
+                  {% if form.prepared_quantity.errors %}
+                    <div class="text-danger mt-1 small">{{ form.prepared_quantity.errors|striptags }}</div>
+                  {% endif %}
                 </div>
 
-                {% for field in form %}
-                  {% if field.name == "stock" %}
-                    <label for="{{ field.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
-                      Current stock
-                      {% if field.field.required %}
-                        <span class="text-danger">*</span>
-                      {% endif %}
-                    </label>
-                    <div class="input-group mb-2">
-                      <button type="button"
-                              class="btn btn-outline-secondary btn-stepper"
-                              onclick="changeValue('{{ field.id_for_label }}', -1, true)">−</button>
-                      {{ field }}
-                      <button type="button"
-                              class="btn btn-outline-secondary btn-stepper"
-                              onclick="changeValue('{{ field.id_for_label }}', 1, true)">+</button>
-                    </div>
-                    {% if field.errors %}
-                      <div class="text-danger mt-1 small">
-                        {{ field.errors|striptags }}
-                      </div>
-                    {% endif %}
+                <div class="col-md-6">
+                  <label for="{{ form.default_quantity.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
+                    {{ form.default_quantity.label }}
+                    {% if form.default_quantity.field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+                  <div class="input-group">
+                    <button type="button" class="btn btn-outline-secondary btn-stepper"
+                            onclick="changeValue('{{ form.default_quantity.id_for_label }}', -1, true)">−</button>
+                    {{ form.default_quantity }}
+                    <button type="button" class="btn btn-outline-secondary btn-stepper"
+                            onclick="changeValue('{{ form.default_quantity.id_for_label }}', 1, true)">+</button>
+                  </div>
+                  <div class="form-text small text-muted">Used when restoring stock to default.</div>
+                  {% if form.default_quantity.errors %}
+                    <div class="text-danger mt-1 small">{{ form.default_quantity.errors|striptags }}</div>
                   {% endif %}
-                {% endfor %}
+                </div>
               </div>
+            </div>
 
-              <div class="border rounded-3 p-3 bg-light">
-                <div class="mb-2 section-title d-flex align-items-center gap-2">
-                  <i class="bi bi-cash-coin"></i> Pricing
+            <!-- Row 4: Cost Price + Selling Price -->
+            <div class="col-12">
+              <div class="mb-2 section-title d-flex align-items-center gap-2">
+                <i class="bi bi-cash-coin"></i> Pricing
+              </div>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="{{ form.cost_price.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
+                    {{ form.cost_price.label }}
+                    {% if form.cost_price.field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text">₱</span>
+                    <button type="button" class="btn btn-outline-secondary btn-stepper"
+                            onclick="changeValue('{{ form.cost_price.id_for_label }}', -1, false)">−</button>
+                    {{ form.cost_price }}
+                    <button type="button" class="btn btn-outline-secondary btn-stepper"
+                            onclick="changeValue('{{ form.cost_price.id_for_label }}', 1, false)">+</button>
+                  </div>
+                  {% if form.cost_price.errors %}
+                    <div class="text-danger mt-1 small">{{ form.cost_price.errors|striptags }}</div>
+                  {% endif %}
                 </div>
 
-                {% for field in form %}
-                  {% if field.name == "cost_price" or field.name == "selling_price" %}
-                    <label for="{{ field.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
-                      {{ field.label }}
-                      {% if field.field.required %}
-                        <span class="text-danger">*</span>
-                      {% endif %}
-                    </label>
-                    <div class="input-group mb-2">
-                      <span class="input-group-text">₱</span>
-                      <button type="button"
-                              class="btn btn-outline-secondary btn-stepper"
-                              onclick="changeValue('{{ field.id_for_label }}', -1, false)">−</button>
-                      {{ field }}
-                      <button type="button"
-                              class="btn btn-outline-secondary btn-stepper"
-                              onclick="changeValue('{{ field.id_for_label }}', 1, false)">+</button>
-                    </div>
-                    {% if field.errors %}
-                      <div class="text-danger mt-1 small">
-                        {{ field.errors|striptags }}
-                      </div>
-                    {% endif %}
+                <div class="col-md-6">
+                  <label for="{{ form.selling_price.id_for_label }}" class="form-label fw-medium small text-uppercase text-muted">
+                    {{ form.selling_price.label }}
+                    {% if form.selling_price.field.required %}<span class="text-danger">*</span>{% endif %}
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text">₱</span>
+                    <button type="button" class="btn btn-outline-secondary btn-stepper"
+                            onclick="changeValue('{{ form.selling_price.id_for_label }}', -1, false)">−</button>
+                    {{ form.selling_price }}
+                    <button type="button" class="btn btn-outline-secondary btn-stepper"
+                            onclick="changeValue('{{ form.selling_price.id_for_label }}', 1, false)">+</button>
+                  </div>
+                  {% if form.selling_price.errors %}
+                    <div class="text-danger mt-1 small">{{ form.selling_price.errors|striptags }}</div>
                   {% endif %}
-                {% endfor %}
-
-                {% if object %}
-                  <hr>
-                  <div class="d-flex justify-content-between small">
-                    <span>Gross value in stock:</span>
-                    <span>
-                      ₱{{ object.stock }} × ₱{{ object.cost_price|default:"0" }}
-                    </span>
-                  </div>
-                  <div class="d-flex justify-content-between small">
-                    <span>Potential revenue:</span>
-                    <span>
-                      ₱{{ object.stock }} × ₱{{ object.selling_price|default:"0" }}
-                    </span>
-                  </div>
-                {% endif %}
+                </div>
               </div>
+
+              {% if object %}
+                <div class="border rounded-3 p-2 bg-light mt-3 small">
+                  <div class="d-flex justify-content-between">
+                    <span class="text-muted">Gross value in stock:</span>
+                    <span>₱{{ object.prepared_quantity }} × ₱{{ object.cost_price|default:"0" }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span class="text-muted">Potential revenue:</span>
+                    <span>₱{{ object.prepared_quantity }} × ₱{{ object.selling_price|default:"0" }}</span>
+                  </div>
+                </div>
+              {% endif %}
             </div>
 
             <!-- Actions -->
@@ -226,104 +254,90 @@ input[type=number] {
     </div>
 
     <!-- RIGHT: POS-STYLE CONTEXT PANEL -->
-<div class="col-lg-4 col-xl-3">
-  <div class="card border-0 shadow-sm rounded-4 h-100">
+    <div class="col-lg-4 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
 
-    <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-speedometer2"></i>
-        <h6 class="mb-0 fw-semibold">Product</h6>
-      </div>
-      <small class="text-white-50 d-none d-sm-inline">Live impact</small>
-    </div>
-
-    <div class="card-body px-3 px-lg-4 py-3 small d-flex flex-column gap-3">
-
-      {% if object %}
-      <!-- Stock snapshot -->
-      <div class="border rounded-3 px-2 py-2 bg-light">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <span class="text-muted text-uppercase small">Current stock</span>
-          {% if object.stock <= 0 %}
-            <span class="badge bg-danger-subtle text-danger rounded-pill px-3">
-              Out of stock
-            </span>
-          {% elif object.stock <= 5 %}
-            <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
-              Low stock
-            </span>
-          {% else %}
-            <span class="badge bg-success-subtle text-success rounded-pill px-3">
-              In stock
-            </span>
-          {% endif %}
-        </div>
-        <div class="fs-5 fw-semibold
-          {% if object.stock <= 0 %}
-            text-danger
-          {% elif object.stock <= 5 %}
-            text-warning
-          {% else %}
-            text-success
-          {% endif %}
-        ">
-          {{ object.stock }}
-        </div>
-        <div class="small text-muted">
-          Use this as reference when adjusting the stock field on the left.
-        </div>
-      </div>
-
-      <!-- Value and revenue -->
-      <div class="border rounded-3 px-2 py-2 bg-body-tertiary">
-        <div class="text-muted text-uppercase small mb-1">Value overview</div>
-        <div class="d-flex justify-content-between small">
-          <span>Stock value (cost):</span>
-          <span>
-            ₱{{ object.stock }} × ₱{{ object.cost_price|default:"0.00" }}
-          </span>
-        </div>
-        <div class="d-flex justify-content-between small">
-          <span>Potential revenue:</span>
-          <span>
-            ₱{{ object.stock }} × ₱{{ object.selling_price|default:"0.00" }}
-          </span>
-        </div>
-        <div class="small text-muted mt-1">
-          Changing cost or price will affect margins and reports for this item.
-        </div>
-      </div>
-      {% endif %}
-
-      <!-- Status legend -->
-      <div class="border rounded-3 px-2 py-2">
-        <div class="text-muted text-uppercase small mb-1">How changes behave</div>
-        <ul class="small text-muted mb-0 ps-3">
-          <li>Stock changes do not alter sales history.</li>
-          <li>New prices apply to future sales only.</li>
-          <li>Keep cost updated for accurate profit reporting.</li>
-        </ul>
-      </div>
-
-      <!-- POS-style tip -->
-      <div class="alert alert-light border-0 mb-0">
-        <div class="d-flex">
-          <div class="me-2">
-            <i class="bi bi-lightning-charge text-warning"></i>
+        <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-speedometer2"></i>
+            <h6 class="mb-0 fw-semibold">Product</h6>
           </div>
-          <div>
-            <div class="fw-semibold small">Before you save</div>
+          <small class="text-white-50 d-none d-sm-inline">Live impact</small>
+        </div>
+
+        <div class="card-body px-3 px-lg-4 py-3 small d-flex flex-column gap-3">
+
+          {% if object %}
+          <!-- Stock snapshot -->
+          <div class="border rounded-3 px-2 py-2 bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-muted text-uppercase small">Current stock</span>
+              {% if object.prepared_quantity <= 0 %}
+                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">Out of stock</span>
+              {% elif object.prepared_quantity <= 5 %}
+                <span class="badge bg-warning-subtle text-warning rounded-pill px-3">Low stock</span>
+              {% else %}
+                <span class="badge bg-success-subtle text-success rounded-pill px-3">In stock</span>
+              {% endif %}
+            </div>
+            <div class="fs-5 fw-semibold
+              {% if object.prepared_quantity <= 0 %}text-danger
+              {% elif object.prepared_quantity <= 5 %}text-warning
+              {% else %}text-success{% endif %}">
+              {{ object.prepared_quantity }}
+            </div>
             <div class="small text-muted">
-              Double-check stock, cost, and selling price, especially after stock counts or supplier price changes.
+              Default quantity: <strong>{{ object.default_quantity }}</strong>
             </div>
           </div>
+
+          <!-- Value and revenue -->
+          <div class="border rounded-3 px-2 py-2 bg-body-tertiary">
+            <div class="text-muted text-uppercase small mb-1">Value overview</div>
+            <div class="d-flex justify-content-between small">
+              <span>Stock value (cost):</span>
+              <span>₱{{ object.prepared_quantity }} × ₱{{ object.cost_price|default:"0.00" }}</span>
+            </div>
+            <div class="d-flex justify-content-between small">
+              <span>Potential revenue:</span>
+              <span>₱{{ object.prepared_quantity }} × ₱{{ object.selling_price|default:"0.00" }}</span>
+            </div>
+            <div class="small text-muted mt-1">
+              Changing cost or price will affect margins and reports for this item.
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Status legend -->
+          <div class="border rounded-3 px-2 py-2">
+            <div class="text-muted text-uppercase small mb-1">How changes behave</div>
+            <ul class="small text-muted mb-0 ps-3">
+              <li>Stock changes do not alter sales history.</li>
+              <li>New prices apply to future sales only.</li>
+              <li>Keep cost updated for accurate profit reporting.</li>
+            </ul>
+          </div>
+
+          <!-- POS-style tip -->
+          <div class="alert alert-light border-0 mb-0">
+            <div class="d-flex">
+              <div class="me-2">
+                <i class="bi bi-lightning-charge text-warning"></i>
+              </div>
+              <div>
+                <div class="fw-semibold small">Before you save</div>
+                <div class="small text-muted">
+                  Double-check stock, cost, and selling price, especially after stock counts or supplier price changes.
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
-
     </div>
 
   </div>
 </div>
-
 
 {% endblock content %}

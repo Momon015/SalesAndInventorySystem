@@ -16,14 +16,14 @@ urlpatterns = [
     path('view/purchase-summary/<int:purchase_id>/', views.view_purchase_summary, name='view-purchase-summary'),
 
     # save items
-    path('view-cart/save/preset/', views.save_items, name='save-items'),
-    path('view/presets/', views.preset_list, name='preset-list'),
-    path('view/<int:preset_id>/preset/', views.preset_detail, name='preset-detail'),
-    path('edit/<int:preset_id>/preset/', views.edit_preset, name='edit-preset'),
-    path('view/preset/<int:preset_id>/delete/', views.delete_preset, name='delete-preset'),
+    path('view-cart/save/preset/', views.save_items, name='material-save-items'),
+    path('view/presets/', views.preset_list, name='material-preset-list'),
+    path('view/<int:preset_id>/preset/', views.preset_detail, name='material-preset-detail'),
+    path('edit/<int:preset_id>/preset/', views.edit_preset, name='material-edit-preset'),
+    path('view/preset/<int:preset_id>/delete/', views.delete_preset, name='material-delete-preset'),
     
     # adding preset to cart
-    path('view/<int:preset_id>/apply-preset/', views.adding_preset_to_cart, name='add-preset-to-cart'),
+    path('view/<int:preset_id>/apply-preset/', views.adding_preset_to_cart, name='material-add-preset-to-cart'),
     
     
     # edit material's quantity from session
@@ -37,4 +37,11 @@ urlpatterns = [
 
     # clear cart sessions
     path('view/cart/clear/', views.clear_cart, name='clear-cart'),
+    
+    # employee
+    path('view/employees-list/', views.employee_list, name='employee-list'),
+    path('create/employee-detail/', views.employee_create, name='employee-create'),
+    path('view/<str:employee_id>/employee-detail/', views.employee_detail, name='employee-detail'),
+    path('update/<str:employee_id>/employee-detail/', views.employee_update, name='employee-update'),
+    path('delete/<str:employee_id>/employee-detail/', views.employee_delete, name='employee-delete'),
 ]

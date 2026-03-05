@@ -1,6 +1,108 @@
 {% extends "main.html" %}
 {% block content %}
 
+<!-- FLASH MESSAGES -->
+{% if messages %}
+<div class="toast-container" aria-live="polite" aria-atomic="true">
+  {% for message in messages %}
+    <div class="toast-message toast-{{ message.tags }}">
+      {% if message.tags == "error" %}
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+      {% elif message.tags == "success" %}
+        <i class="bi bi-check-circle-fill me-2"></i>
+      {% elif message.tags == "info" %}
+        <i class="bi bi-info-circle-fill me-2"></i>
+      {% elif message.tags == "warning" %}
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {% endif %}
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<style>
+/* Toast container */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Base toast */
+.toast-message {
+  min-width: 240px;
+  max-width: 360px;
+  padding: 0.75rem 1rem;
+  border-radius: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: toast-in 0.35s ease forwards,
+             toast-out 0.35s ease forwards 2.8s;
+}
+
+/* Color variants (Django message tags) */
+.toast-success {
+  background: #e9f8ef;
+  color: #0f5132;
+  border-left: 4px solid #198754;
+}
+
+.toast-error,
+.toast-danger {
+  background: #fdecec;
+  color: #842029;
+  border-left: 4px solid #dc3545;
+}
+
+.toast-warning {
+  background: #fff4e5;
+  color: #664d03;
+  border-left: 4px solid #ffc107;
+}
+
+.toast-info {
+  background: #e7f1ff;
+  color: #084298;
+  border-left: 4px solid #0d6efd;
+}
+
+/* Animations */
+@keyframes toast-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const toasts = document.querySelectorAll(".toast-message");
+
+    toasts.forEach(toast => {
+      setTimeout(() => {
+        toast.remove();
+      }, 3200); // must match animation timing
+    });
+  });
+</script>
+
 <div class="container-fluid py-3 py-lg-4">
 
   <!-- PAGE HEADER -->
@@ -11,11 +113,18 @@
         Products
       </h4>
       <small class="text-muted">
-        Inventory & menu items used in POS and orders.
+        Products available for sale and used in POS transactions.
         {% if page_obj %}
           · Total items: {{ page_obj.paginator.count }}
         {% endif %}
       </small>
+    </div>
+      <!-- NEW: Create Purchase Record button -->
+    <div class="mb-2 mb-lg-0">
+      <a href="{% url 'view-sale' %}" class="btn btn-success btn-sm">
+        <i class="bi bi-file-text me-1"></i>
+          View Sales Record
+      </a>
     </div>
   </div>
 
@@ -99,8 +208,8 @@
                     <th class="ps-3 ps-lg-4">Name</th>
                     <th>Category</th>
                     <th>SKU</th>
-                    <th class="text-end">Cost</th>
-                    <th class="text-end">Price</th>
+                    <th class="text-end">Unit Cost</th>
+                    <th class="text-end">Unit Price</th>
                     <th class="text-center">Stock</th>
                     <th class="text-center">Status</th>
                     <th>Date added</th>
@@ -145,16 +254,16 @@
 
                     <!-- STOCK -->
                     <td class="text-center fw-semibold">
-                      {{ product.stock }}
+                      {{ product.prepared_quantity }}
                     </td>
 
                     <!-- STATUS -->
                     <td class="text-center">
-                      {% if product.stock <= 0 %}
+                      {% if product.prepared_quantity <= 0 %}
                         <span class="badge bg-danger-subtle text-danger rounded-pill px-3">
                           Out of stock
                         </span>
-                      {% elif product.stock <= 5 %}
+                      {% elif product.prepared_quantity <= 5 %}
                         <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
                           Low stock
                         </span>
@@ -175,10 +284,31 @@
                     <!-- ACTIONS -->
                     <td class="text-end pe-3 pe-lg-4">
                       <div class="btn-group btn-group-sm" role="group">
+                        <!-- Add to sale -->
+                        <a href="{% url 'add-to-sale' product.id %}"
+                          class="btn btn-outline-secondary"
+                          title="Add to sale"
+                          data-bs-toggle="tooltip"
+                          data-bs-placement="top">
+                          <i class="bi bi-plus"></i>
+                        </a>
+
+                        <!-- View product -->
                         <a href="{% url 'product-detail' product.slug %}"
-                           class="btn btn-outline-secondary">
-                          <i class="bi bi-list-ul me-1"></i>
-                          Details
+                          class="btn btn-outline-secondary"
+                          title="View product details"
+                          data-bs-toggle="tooltip"
+                          data-bs-placement="top">
+                          <i class="bi bi-eye"></i>
+                        </a>
+
+                        <!-- Restore quantity -->
+                        <a href="{% url 'product-restore-quantity' product.id %}"
+                          class="btn btn-outline-secondary"
+                          title="Restore product quantity"
+                          data-bs-toggle="tooltip"
+                          data-bs-placement="top">
+                          <i class="bi bi-arrow-clockwise"></i>
                         </a>
                       </div>
                     </td>
@@ -251,11 +381,10 @@
         </div>
         {% endif %}
 
-
       </div>
     </div>
 
-            <!-- RIGHT: POS-STYLE SALES CONTEXT PANEL -->
+    <!-- RIGHT: POS-STYLE SALES CONTEXT PANEL -->
     <div class="col-lg-4 col-xl-3">
       <div class="card border-0 shadow-sm rounded-4 h-100">
 
@@ -279,7 +408,7 @@
               </span>
             </div>
             <div class="d-flex justify-content-between">
-              <span class="small text-muted">Needs attention (low / none)</span>
+              <span class="small text-muted">Needs attention (out of stock)</span>
               <span class="fw-semibold text-danger">
                 {{ out_of_stock|default:0 }}
               </span>
@@ -289,7 +418,7 @@
             </div>
           </div>
 
-          <!-- “Work queues” for staff -->
+          <!-- "Work queues" for staff -->
           <div class="border rounded-3 px-2 py-2 bg-body-tertiary">
             <div class="text-muted text-uppercase small mb-1">What to review today</div>
             <ul class="small text-muted mb-0 ps-3">
@@ -307,13 +436,18 @@
                 <i class="bi bi-plus-circle me-1"></i>
                 Add product to catalog
               </a>
+              <a href="{% url 'product-preset-list' %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-list-ul me-1"></i>
+                View Presets
+              </a>
+              <a href="{% url 'product-batch-restore-quantity' %}" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-bootstrap-reboot me-1"></i>
+                Restore products
+              </a>
               <a href="{% url 'product-list' %}?stock=high" class="btn btn-sm btn-outline-success">
                 <i class="bi bi-box-seam me-1"></i>
                 View in-stock products
               </a>
-
-
-
               <a href="{% url 'product-list' %}?stock=low" class="btn btn-sm btn-outline-warning">
                 <i class="bi bi-exclamation-triangle me-1"></i>
                 Review low stock items
@@ -345,6 +479,7 @@
       </div>
     </div>
 
-
+  </div>
+</div>
 
 {% endblock content %}

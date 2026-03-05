@@ -1,7 +1,7 @@
 from django.forms import ModelForm
 from django import forms
 
-from Product.models import Product
+from Product.models import Product, ProductPreset, ProductPresetItem
 
 from core.models import Category
 
@@ -10,7 +10,7 @@ from core.models import Category
 class ProductForm(ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'description', 'cost_price', 'stock', 'selling_price', 'category']
+        fields = ['name', 'description', 'cost_price', 'prepared_quantity', 'selling_price', 'category', 'default_quantity']
     
 
     

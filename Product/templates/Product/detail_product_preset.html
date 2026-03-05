@@ -125,13 +125,17 @@ input[type=number] {
       </small>
     </div>
     <div class="d-flex flex-wrap gap-2">
-      <a href="{% url 'material-preset-list' %}" class="btn btn-sm btn-outline-secondary">
-        <i class="bi bi-arrow-left-circle me-1"></i>
-        Back to presets
-      </a>
-      <a href="{% url 'material-edit-preset' preset.id %}" class="btn btn-sm btn-primary">
+      <a href="{% url 'product-edit-preset' preset.id %}" class="btn btn-sm btn-primary">
         <i class="bi bi-pencil-square me-1"></i>
         Edit preset
+      </a>
+      <a href="{% url 'product-delete-preset' preset.id %}" class="btn btn-sm btn-danger">
+        <i class="bi bi-trash me-1"></i>
+        Delete preset
+      </a>
+      <a href="{% url 'product-preset-list' %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left-circle me-1"></i>
+        Back to presets
       </a>
     </div>
   </div>
@@ -151,9 +155,15 @@ input[type=number] {
             <div class="fw-semibold">{{ preset.id }}</div>
           </div>
           <div>
+            {% if item_count > 1 %}
             <label class="small text-muted mb-0">Total items</label>
-            <div class="fw-semibold">{{ preset.preset_items.count }}</div>
+            <div class="fw-semibold">{{ item_count}}</div>
           </div>
+            {% else %}
+            <label class="small text-muted mb-0">Total item</label>
+            <div class="fw-semibold">{{ item_count}}</div>
+          </div>
+            {% endif %}
           <div>
             <label class="small text-muted mb-0">Created</label>
             <div class="fw-semibold">{{ preset.created_at|date:"M d, Y" }}</div>
@@ -169,17 +179,17 @@ input[type=number] {
           <div class="mb-2">
             <div class="fw-semibold mb-1">Use this preset</div>
             <div class="text-muted">
-              Add all items from this bundle into the active purchase.
+              Add all product items from this bundle into the active sale.
             </div>
           </div>
           <div class="d-grid gap-2 mt-2">
-            <a href="{% url 'material-add-preset-to-cart' preset.id %}" class="btn btn-success btn-sm">
+            <a href="{% url 'product-preset-add-to-sale' preset.id %}" class="btn btn-success btn-sm">
               <i class="bi bi-cart-plus me-1"></i>
-              Add to current purchase
+              Add to current sale
             </a>
-            <a href="{% url 'view-cart' %}" class="btn btn-outline-primary btn-sm">
+            <a href="{% url 'view-sale' %}" class="btn btn-outline-primary btn-sm">
               <i class="bi bi-receipt me-1"></i>
-              Go to purchase screen
+              Go to sale screen
             </a>
           </div>
         </div>
@@ -190,9 +200,9 @@ input[type=number] {
   <!-- ITEMS TABLE -->
   <div class="card border-0 shadow-sm rounded-4">
     <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center">
-      <span class="fw-semibold small">Items in this preset</span>
+      <span class="fw-semibold small">Product Items in this preset</span>
       <small class="text-muted d-none d-sm-inline">
-        Prices are current material prices; discounts apply per line.
+        Prices are current for product unit cost, quantity and total.
       </small>
     </div>
     <div class="card-body p-0">
@@ -201,59 +211,55 @@ input[type=number] {
           <thead class="table-light small text-uppercase">
             <tr>
               <th>Item</th>
-              <th class="text-center">Price</th>
               <th class="text-center">Quantity</th>
-              <th class="text-center">Discount</th>
+              <th class="text-center">Unit Cost</th>
+              <th class="text-center">Total Cost</th>
+              <th class="text-center">Unit Price</th>
               <th class="text-end">Line total</th>
             </tr>
           </thead>
           <tbody>
-            {% for item in preset.preset_items.all %}
-            {% with unit=item.material.price qty=item.quantity disc=item.discount|default:0 %}
-            {% with line_total=unit|floatformat:2 %}
+            {% for item in items %}
             <tr>
               <!-- ITEM NAME -->
               <td>
-                <div class="fw-semibold">{{ item.material.name }}</div>
+                <div class="fw-semibold">{{ item.name }}</div>
                 <div class="small text-muted">
-                  Material ID: {{ item.material.id }}
+                  Product ID: {{ item.id }}
                 </div>
-              </td>
-
-              <!-- PRICE -->
-              <td class="text-center">
-                <span class="fw-semibold">₱{{ unit|floatformat:2 }}</span>
               </td>
 
               <!-- QUANTITY -->
               <td class="text-center">
-                <span class="badge text-bg-light px-3 py-1">{{ qty }}</span>
+                <span class="fw-semibold">{{ item.quantity }}</span>
               </td>
 
-              <!-- DISCOUNT -->
+              <!-- UNIT COST -->
               <td class="text-center">
-                {% if item.discount %}
-                  <span class="badge text-bg-warning-subtle text-warning px-3 py-1">
-                    ₱{{ disc|floatformat:0 }}
-                  </span>
-                {% else %}
-                  <span class="text-muted small">₱0</span>
-                {% endif %}
+                <span class="fw-semibold">₱{{ item.cost_price|floatformat:2 }}</span>
+              </td>
+
+              <!-- TOTAL COST -->
+              <td class="text-center">
+                <span class="fw-semibold">₱{{ item.total_cost_per_line|floatformat:2 }}</span>
+              </td>
+
+              <!-- UNIT PRICE/ SELLING PRICE -->
+              <td class="text-center">
+                <span class="fw-semibold">₱{{ item.selling_price|floatformat:2 }}</span>
               </td>
 
               <!-- LINE TOTAL (approx; adjust in view if you need exact calc) -->
               <td class="text-end">
                 <span class="fw-semibold">
-                  ₱{{item.total_line_cost}}
+                  ₱{{item.line_total|floatformat:2}}
                 </span>
               </td>
             </tr>
-            {% endwith %}
-            {% endwith %}
             {% empty %}
             <tr>
               <td colspan="5" class="text-center py-4 text-muted">
-                No materials found in this preset.
+                No product found in this preset.
               </td>
             </tr>
             {% endfor %}

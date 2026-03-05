@@ -14,7 +14,7 @@
 
     <!-- Right side: quick actions on mobile -->
     <div class="d-flex d-lg-none align-items-center gap-2">
-      <a href="#" class="btn btn-sm btn-info text-white"> <!-- new sale -->
+      <a href="{% url 'view-sale' %}" class="btn btn-sm btn-info text-white"> <!-- new sale -->
         <i class="bi bi-plus-circle me-1"></i> New Sale
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -38,15 +38,15 @@
 
         <!-- Sales -->
         <li class="nav-item mx-1">
-          <a class="nav-link {% if section == 'sales' %}active{% endif %}"
-             href="#"> <!-- sales list -->
+          <a class="nav-link {% if section == 'sale' %}active{% endif %}"
+             href="{% url 'sale-list' %}"> <!-- sales list -->
             <i class="bi bi-cash-coin me-1"></i>Sales
           </a>
         </li>
 
         <!-- Products / menu items -->
         <li class="nav-item mx-1">
-          <a class="nav-link {% if section == 'products' %}active{% endif %}"
+          <a class="nav-link {% if section == 'product' %}active{% endif %}"
              href="{% url 'product-list' %}">
             <i class="bi bi-basket me-1"></i>Products
           </a>
@@ -64,7 +64,7 @@
         <li class="nav-item mx-1">
           <a class="nav-link {% if section == 'purchase' %}active{% endif %}"
              href="{% url 'purchase-list' %}">
-            <i class="bi bi-cash-stack me-1"></i>Transactions
+            <i class="bi bi-cash-stack me-1"></i>Purchase
           </a>
         </li>
 
@@ -73,6 +73,14 @@
           <a class="nav-link {% if section == 'expense' %}active{% endif %}"
              href="#"> <!-- expenses -->
             <i class="bi bi-wallet2 me-1"></i>Expenses
+          </a>
+        </li>
+
+          <!-- Employee -->
+        <li class="nav-item mx-1">
+          <a class="nav-link {% if section == 'employee' %}active{% endif %}"
+             href="{% url 'employee-list' %}"> <!-- expenses -->
+            <i class="bi bi-wallet2 me-1"></i>Employee
           </a>
         </li>
 
@@ -91,7 +99,7 @@
 
         <!-- Quick action -->
         <li class="nav-item d-none d-lg-block mx-1">
-          <a href="#" class="btn btn-sm btn-info text-white rounded-pill">
+          <a href="{% url 'view-sale' %}" class="btn btn-sm btn-info text-white rounded-pill">
             <!-- new sale -->
             <i class="bi bi-plus-circle me-1"></i> New Sale
           </a>

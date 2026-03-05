@@ -69,7 +69,7 @@ def material_list(request):
         elif stock_filter == 'none':
             materials = materials.filter(quantity=0)
     else:
-        print('form errors', form.errors)
+        print(form.errors)
         
     # pagination
     paginator = Paginator(materials, 8)
@@ -77,9 +77,10 @@ def material_list(request):
     page_obj = paginator.get_page(page_number)
            
 
-    context = {'page_obj': materials, 'categories': categories, 'out_of_stock': out_of_stock, 'page_obj': page_obj, 'total_items': total_items}
+    context = {'page_obj': materials, 'categories': categories, 'out_of_stock': out_of_stock, 'page_obj': page_obj, 'total_items': total_items, 'section': 'inventory'}
     return render(request, 'Inventory/material_list.html', context)
 
+@login_required(login_url='login')
 def material_create(request):
     if request.method == 'POST':
         form = MaterialForm(request.POST)
@@ -98,12 +99,14 @@ def material_create(request):
     context = {'form': form}
     return render(request, 'Inventory/material_create.html', context)
 
+@login_required(login_url='login')
 def material_detail(request, slug):
     material = get_object_or_404(Material, slug=slug)
     
     context = {'material': material}
     return render(request, 'inventory/material_detail.html', context)
 
+@login_required(login_url='login')
 def material_update(request, slug):
     material = get_object_or_404(Material, slug=slug)
     
@@ -123,6 +126,7 @@ def material_update(request, slug):
     context = {'form': form, 'material': material}
     return render(request, 'Inventory/material_update.html', context)
 
+@login_required(login_url='login')
 def material_delete(request, slug):
     material = get_object_or_404(Material, slug=slug)
     

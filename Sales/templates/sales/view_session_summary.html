@@ -1,0 +1,177 @@
+{% extends 'main.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid py-3 py-lg-4">
+
+  <!-- HEADER -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+    <div class="mb-2 mb-lg-0">
+      <h4 class="fw-bold mb-1 d-flex align-items-center gap-2 text-success">
+        <i class="bi bi-check-circle"></i>
+        Sale Summary
+      </h4>
+      <small class="text-muted">
+        Review this sale before posting it to sales transactions.
+      </small>
+    </div>
+    <div class="text-muted small">
+      <span class="badge bg-light text-dark border">
+        {% if items|length > 1 %}
+          {{ items|length }} lines
+        {% else %}
+          {{ items|length }} line
+        {% endif %}
+      </span>
+    </div>
+  </div>
+
+  <div class="row g-3 g-lg-4">
+
+    <!-- LEFT: ITEMS RECEIPT -->
+    <div class="col-lg-8">
+      <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-light d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-basket3 text-primary"></i>
+            <h6 class="mb-0 fw-semibold">Product Items</h6>
+          </div>
+          <small class="text-muted d-none d-sm-inline">
+            Products, quantities, and selling price.
+          </small>
+        </div>
+
+        <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+          <table class="table table-sm table-hover mb-0 align-middle">
+            <thead class="table-light small text-uppercase">
+              <tr>
+                <th>Name</th>
+                <th class="text-center">Qty</th>
+                <th class="text-center">Unit Cost</th>
+                <th class="text-center">Total Cost</th>
+                <th class="text-center">Unsold Qty</th>
+                <th class="text-center">Unit Price</th>
+                <th class="text-center">Line total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr>
+                <td><div class="fw-semibold">{{ item.name }}</div></td>
+                <td class="text-center">{{ item.quantity }}</td>
+                <td class="text-center">₱{{ item.cost_price|floatformat:2 }}</td>
+                <td class="text-center">₱{{ item.total_cost_price_per_line|floatformat:2 }}</td>
+                <td class="text-center">{{ item.unsold_quantity }}</td>
+                <td class="text-center">₱{{ item.selling_price|floatformat:2 }}</td>
+                <td class="text-center fw-semibold text-success">
+                  ₱{{ item.line_total|floatformat:2 }}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                  No products on this sale yet.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: TOTALS & ACTIONS -->
+    <div class="col-lg-4">
+
+      <!-- Sales Summary -->
+      <div class="card border-0 shadow-sm rounded-4 mb-3">
+        <div class="card-header bg-dark text-white">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-graph-up-arrow"></i>
+            <h6 class="mb-0 fw-semibold">Sales Summary</h6>
+          </div>
+        </div>
+
+        <!-- TOTAL REVENUE -->
+        <div class="card-body small d-flex flex-column gap-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">
+              <i class="bi bi-calculator me-1 text-primary"></i>
+              Total revenue
+            </div>
+            <div class="fw-semibold">₱{{ total_revenue|floatformat:2 }}</div>
+          </div>
+
+          <!-- TOTAL SALARY COST -->
+          {% if total_salary_cost > 0 %}
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted">
+              <i class="bi bi-person-workspace me-1 text-info"></i>
+              Labor cost (staff for this shift)
+            </span>
+            <span class="fw-semibold text-danger">
+              ₱{{ total_salary_cost|floatformat:2 }}
+            </span>
+          </div>
+          {% endif %}
+
+          <!-- TOTAL COST PRICE -->
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">
+              <i class="bi bi-cash-coin me-1 text-warning"></i>
+              Total cost price
+            </div>
+            <div class="fw-semibold text-danger">₱{{ total_cost_price|floatformat:2 }}</div>
+          </div>
+
+          <!-- TOTAL WASTE COST -->
+          {% if total_waste_cost %}
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">
+              <i class="bi bi-clipboard-check me-1 text-danger"></i>
+              Total Waste Cost
+            </div>
+            <div class="fw-semibold text-danger">₱{{ total_waste_cost|floatformat:2 }}</div>
+          </div>
+          {% endif %}
+
+          <!-- TOTAL NET PROFIT -->
+          <hr class="my-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="fw-semibold">
+              <i class="bi bi-cash-stack me-1 text-success"></i>
+              Net Profit
+            </div>
+            <div class="fs-4 fw-bold text-success">
+              ₱{{ net_profit|floatformat:2 }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+        <div class="card border-0 shadow-sm rounded-4">
+          <div class="card-body">
+            <div class="small text-muted mb-2">
+              Confirm this sale to update inventory cost, stock, and employee salary usage.
+            </div>
+            <div class="d-grid gap-2">
+              <a href="{% url 'view-sale' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-pencil-square me-1"></i>
+                Edit product items
+              </a> 
+              <a href={% url 'sale-confirm-summary' %} class="btn btn-success btn-lg">
+                <i class="bi bi-check2-circle me-1"></i>
+                Confirm Sales
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+</div>
+{% endblock content %}

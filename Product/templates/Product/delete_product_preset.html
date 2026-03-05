@@ -46,8 +46,8 @@
               {% for item in preset.preset_items.all %}
               <div class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
-                  <div class="fw-semibold">{{ item.material.name }}</div>
-                  <small class="text-muted">Material</small>
+                  <div class="fw-semibold">{{ item.product.name }}</div>
+                  <small class="text-muted">Product</small>
                 </div>
                 <span class="badge bg-secondary">
                   × {{ item.quantity }}
@@ -57,7 +57,7 @@
             </div>
           {% else %}
             <div class="text-muted fst-italic">
-              No items in this preset.
+              No product items in this preset.
             </div>
           {% endif %}
 
@@ -104,9 +104,8 @@
                 Confirm delete
               </button>
 
-              <a href="{% url 'material-preset-detail' preset.id %}"
+              <a href="{% url 'product-preset-detail' preset.id %}"
                  class="btn btn-outline-secondary">
-                <i class="bi bi-x-circle me-2"></i>
                 Cancel
               </a>
             </div>

@@ -17,8 +17,8 @@ from django.urls import reverse
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth import update_session_auth_hash
 
-from Expense.models import PurchaseItem, Purchase, Preset, PresetItem
-from Expense.forms import PurchaseForm, PurchaseItemForm, PurchaseFilterForm, PresetForm, PresetItemForm
+from Expense.models import PurchaseItem, Purchase, MaterialPreset, MaterialPresetItem, Employee
+from Expense.forms import PurchaseForm, PurchaseItemForm, PurchaseFilterForm, PresetForm, PresetItemForm, EmployeeForm
 
 from Inventory.models import Material
 from Inventory.forms import MaterialForm
@@ -132,9 +132,10 @@ def purchase_history(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    context = {'page_obj': purchases, 'page_obj': page_obj, 'total_count': total_count, 'total_cost': total_cost, 'average_cost': average_cost}
+    context = {'page_obj': purchases, 'page_obj': page_obj, 'total_count': total_count, 'total_cost': total_cost, 'average_cost': average_cost, 'section': 'purchase'}
     return render(request, 'Expense/purchase_history.html', context)
 
+@login_required(login_url='login')
 def purchase_detail(request, purchase_id):
     purchase = get_object_or_404(Purchase, id=purchase_id)
     purchase_items = purchase.materials.select_related('material')
@@ -144,7 +145,7 @@ def purchase_detail(request, purchase_id):
     return render(request, 'Expense/purchase_detail.html', context)
 
 """clearing cart just in case there's a bug """
-
+@login_required(login_url='login')
 def clear_cart(request):
     request.session['cart'] = {}
     request.session.modified = True
@@ -153,6 +154,7 @@ def clear_cart(request):
 
 """clearing cart just in case there's a bug """
 
+@login_required(login_url='login')
 def add_to_cart(request, id):
     cart = request.session.get('cart', {})
     material = get_object_or_404(Material, id=id) 
@@ -217,6 +219,7 @@ def add_to_cart(request, id):
 
     return redirect(url)
 
+@login_required(login_url='login')
 def view_cart(request):
     cart = request.session.get('cart', {})
     subtotal = 0
@@ -255,6 +258,7 @@ def view_cart(request):
     context = {'total_after_discount': total_after_discount, 'cart_items': cart_items, 'subtotal': subtotal, 'total_discount': total_discount}
     return render(request, 'Expense/view_cart.html', context)
 
+@login_required(login_url='login')
 def view_cart_summary(request):
     cart = request.session.get('cart', {})
     subtotal = 0
@@ -295,6 +299,7 @@ def view_cart_summary(request):
     context = {'subtotal': subtotal, 'total_after_discount': total_after_discount, 'cart_items': cart_items, 'total_discount': total_discount}
     return render(request, 'Expense/view_cart_summary.html', context)
 
+@login_required(login_url='login')
 def confirm_purchase_summary(request):
     cart = request.session.get('cart', {})
     lines = request.session.get('lines', 0)
@@ -351,6 +356,7 @@ def confirm_purchase_summary(request):
 
     return redirect('view-purchase-summary', purchase.id)
 
+@login_required(login_url='login')
 def view_purchase_summary(request, purchase_id):
     purchase = get_object_or_404(Purchase, id=purchase_id)
     purchase_items = purchase.materials.select_related('material')
@@ -381,7 +387,8 @@ def view_purchase_summary(request, purchase_id):
 
     context = {'cart_items': cart_items, 'subtotal': subtotal, 'total_cost': purchase.total_cost, 'total_discount': total_discount, 'purchase': purchase}
     return render(request, 'Expense/view_purchase_summary.html', context)
-    
+
+@login_required(login_url='login')
 def cart_remove_materials(request, id):
     cart = request.session.get('cart', {})
     material = get_object_or_404(Material, id=id)
@@ -395,6 +402,7 @@ def cart_remove_materials(request, id):
     request.session.modified = True
     return redirect('view-cart')
 
+@login_required(login_url='login')
 def cart_edit_material(request, id):
     cart = request.session.get('cart', {})
     material = get_object_or_404(Material, id=id)
@@ -417,6 +425,7 @@ def cart_edit_material(request, id):
     
     return redirect('view-cart')
 
+@login_required(login_url='login')
 def cart_discount_material(request):
     cart = request.session.get('cart', {})
     
@@ -429,14 +438,15 @@ def cart_discount_material(request):
     request.session.modified = True
     
     return redirect('view-cart')
-        
+
+@login_required(login_url='login')  
 def save_items(request):
     cart = request.session.get('cart', {})
     checkbox = request.POST.get('checkbox')
     name = request.POST.get('name')
     print('cart', cart)
     if checkbox:
-        preset, _ = Preset.objects.get_or_create(user=request.user, is_active=True, name=name)
+        preset, _ = MaterialPreset.objects.get_or_create(user=request.user, is_active=True, name=name)
         
         for material_id, data in cart.items():
             
@@ -444,20 +454,21 @@ def save_items(request):
             quantity = data['quantity']
             discount = data.get('discount', 0)
             
-            PresetItem.objects.get_or_create(
+            MaterialPresetItem.objects.get_or_create(
                 preset=preset,
                 material=material,
                 defaults={'quantity': quantity, 'discount': discount}
                 
             )
-            return redirect('preset-list')
+            return redirect('material-preset-list')
         request.session['preset_id'] = preset.id
 
         
     return redirect('view-cart')
-    
+
+@login_required(login_url='login')
 def preset_list(request):
-    presets = Preset.objects.all().order_by('-created_at')
+    presets = MaterialPreset.objects.all().order_by('-created_at')
     
     paginator = Paginator(presets, 5)
     page_number = request.GET.get('page')
@@ -466,17 +477,16 @@ def preset_list(request):
     context = {'page_obj': presets, 'page_obj': page_obj}
     return render(request, 'Expense/preset_list.html', context)
 
+@login_required(login_url='login')
 def preset_detail(request, preset_id):
-    preset = get_object_or_404(Preset, id=preset_id)
-    
-    
-    
-    
+    preset = get_object_or_404(MaterialPreset, id=preset_id)
+
     context = {'preset': preset}
     return render(request, 'Expense/preset_detail.html', context)
 
+@login_required(login_url='login')
 def edit_preset(request, preset_id):
-    preset = get_object_or_404(Preset, id=preset_id)
+    preset = get_object_or_404(MaterialPreset, id=preset_id)
     save_items = preset.preset_items.select_related('material')
     
     qty_changed = False
@@ -514,16 +524,17 @@ def edit_preset(request, preset_id):
         if discount_changed == True and not qty_changed == True:
             messages.success(request, f"{item.material.name}'s discount has been updated. ")
         
-        return redirect('preset-detail', preset.id)
+        return redirect('material-preset-detail', preset.id)
       
         
     context = {'preset': preset, 'items': save_items}
     return render(request, 'Expense/edit_preset.html', context)
 
+@login_required(login_url='login')
 def adding_preset_to_cart(request, preset_id):
     cart = request.session.get('cart', {})
     
-    preset = get_object_or_404(Preset, id=preset_id)
+    preset = get_object_or_404(MaterialPreset, id=preset_id)
     items = preset.preset_items.select_related('material')
     
     if preset:
@@ -559,19 +570,82 @@ def adding_preset_to_cart(request, preset_id):
     request.session.modified = True
 
     return redirect('view-cart')
-    
+
+@login_required(login_url='login')  
 def delete_preset(request, preset_id):
-    preset = get_object_or_404(Preset, id=preset_id)
+    preset = get_object_or_404(MaterialPreset, id=preset_id)
     
     if request.method == 'POST':
         preset.delete()
         messages.success(request, f"{preset.name} has been deleted.")
-        return redirect('preset-list')
+        return redirect('material-preset-list')
 
     return render(request, 'Expense/delete_preset.html', {'preset': preset})
 
+@login_required(login_url='login')  
+def employee_create(request):
+    page = 'employee'
+    
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.save()
+            
+            messages.success(request, f"{obj.name}'s details has successfully created.")
+            return redirect('employee-list')
+        else:
+            print(form.errors)
+    else:
+        form = EmployeeForm()
 
-        
-        
+    context = {'form': form, 'section': 'employee'}
+    return render(request, 'Expense/employee_create.html', context)
 
+@login_required(login_url='login')
+def employee_list(request):
+    employees = Employee.objects.all()
+
+    context = {'employees': employees, 'section': 'employee', 'section': 'employee'}
+    return render(request, 'Expense/employee_list.html', context)
+
+@login_required(login_url='login')
+def employee_detail(request, employee_id):
+    employee = get_object_or_404(Employee, id=employee_id)
+    
+    monthly_rate = employee.daily_rate * 30
+    
+    context = {'employee': employee, 'monthly_rate': monthly_rate, 'section': 'employee'}
+    
+    return render(request, 'Expense/employee_detail.html', context)
+
+@login_required(login_url='login')
+def employee_update(request, employee_id):
+    employee = get_object_or_404(Employee, id=employee_id)
+    
+    if request.method == 'POST':
+        form = EmployeeForm(request.POST, instance=employee)
         
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.save()
+            messages.success(request, f"{obj.name}'s details has been updated.")
+            return redirect('employee-detail', employee.id)
+        else:
+            print(form.errors)
+    else:
+        form = EmployeeForm(instance=employee)
+        
+    context = {'form': form, 'employee': employee, 'section': 'employee'}
+    return render(request, 'Expense/employee_update.html', context)
+
+@login_required(login_url='login')
+def employee_delete(request, employee_id):
+    employee = get_object_or_404(Employee, id=employee_id)
+
+    if request.method == 'POST':
+        employee.delete()
+        messages.success(request, f"{employee.name} - has been deleted from the employee system.")
+        return redirect('employee-list')
+    context = {'employee': employee, 'section': 'employee'}
+    return render(request, 'Expense/employee_delete.html', context)
