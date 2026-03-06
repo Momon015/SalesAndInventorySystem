@@ -153,6 +153,8 @@ def sale_detail(request, sale_id):
 @login_required(login_url='login')
 def add_to_sales(request, product_id):
     sale = request.session.get('sale', {})
+    print('SALE TYPE:', type(sale))  # ← add this
+    print('SALE VALUE:', sale) 
     product = get_object_or_404(Product, id=product_id)
     product_key = str(product.id)
 
@@ -181,7 +183,7 @@ def add_to_sales(request, product_id):
 
 @login_required(login_url='login')
 def view_sale(request):
-    sale = request.session.get('sale')
+    sale = request.session.get('sale', {})
     net_profit = 0
     total_revenue = 0
     total_cost_price = 0
@@ -370,7 +372,7 @@ def confirm_view_summary(request):
                 )
 
     except ValidationError:
-        messages.error(request, f"{product.name} - Insufficient stock.")
+        messages.error(request, f"Cannot complete the sale - Insufficient stock.")
         return redirect('view-sale')  # exits early if error occurs
     
     # net profit 

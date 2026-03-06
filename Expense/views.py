@@ -17,8 +17,8 @@ from django.urls import reverse
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth import update_session_auth_hash
 
-from Expense.models import PurchaseItem, Purchase, MaterialPreset, MaterialPresetItem, Employee
-from Expense.forms import PurchaseForm, PurchaseItemForm, PurchaseFilterForm, PresetForm, PresetItemForm, EmployeeForm
+from Expense.models import PurchaseItem, Purchase, Employee
+from Expense.forms import PurchaseForm, PurchaseItemForm, PurchaseFilterForm, EmployeeForm
 
 from Inventory.models import Material
 from Inventory.forms import MaterialForm
@@ -150,7 +150,7 @@ def clear_cart(request):
     request.session['cart'] = {}
     request.session.modified = True
     messages.success(request, "All items has been removed.")
-    return redirect('view-cart')
+    return redirect('material-list')
 
 """clearing cart just in case there's a bug """
 
@@ -310,32 +310,30 @@ def confirm_purchase_summary(request):
         with transaction.atomic():
             status, created = StatusModel.objects.get_or_create(name='paid') # cash payment directly so automatically paid
             purchase = Purchase.objects.create(total_cost=0, status=status)
-    except ValidationError:
-        messages.error(request, f"Cannot add {material.name} - Insufficient stock.")
-        return redirect('material-list')
-    for material_id, data in cart.items():
-        material = get_object_or_404(Material, id=material_id)
-        discount = data.get('discount', 0)
-        quantity = data['quantity']
-        
-        # computations 
-        item_total = material.price * quantity
-        total_discount += discount
-        subtotal += item_total
-        
-        if material.quantity < quantity:
-            messages.warning(request, f"{material.name} is only {material.quantity}pc left.")
-        
-        # reduce the material's stock 
-        material.quantity -= quantity
-        material.save()
 
-        item = PurchaseItem.objects.create(
-        purchase=purchase,
-        material=material,
-        discount=data.get('discount', 0),
-        quantity=data['quantity'],
-        )
+            for material_id, data in cart.items():
+                material = get_object_or_404(Material, id=material_id)
+                discount = data.get('discount', 0)
+                quantity = data['quantity']
+                
+                # computations 
+                item_total = material.price * quantity
+                total_discount += discount
+                subtotal += item_total
+                
+                if material.quantity < quantity:
+                    messages.warning(request, f"{material.name} is only {material.quantity}pc left.")
+                
+                PurchaseItem.objects.create(
+                    purchase=purchase,
+                    material=material,
+                    discount=data.get('discount', 0),
+                    quantity=data['quantity'],
+                )
+                
+    except ValidationError:
+        messages.error(request, f"Cannot complete the purchase - Insufficient stock.")
+        return redirect('material-list')
         
     # check if there's a discount
     total_after_discount = max(subtotal - total_discount, 0)
@@ -438,149 +436,6 @@ def cart_discount_material(request):
     request.session.modified = True
     
     return redirect('view-cart')
-
-@login_required(login_url='login')  
-def save_items(request):
-    cart = request.session.get('cart', {})
-    checkbox = request.POST.get('checkbox')
-    name = request.POST.get('name')
-    print('cart', cart)
-    if checkbox:
-        preset, _ = MaterialPreset.objects.get_or_create(user=request.user, is_active=True, name=name)
-        
-        for material_id, data in cart.items():
-            
-            material = get_object_or_404(Material, id=material_id)
-            quantity = data['quantity']
-            discount = data.get('discount', 0)
-            
-            MaterialPresetItem.objects.get_or_create(
-                preset=preset,
-                material=material,
-                defaults={'quantity': quantity, 'discount': discount}
-                
-            )
-            return redirect('material-preset-list')
-        request.session['preset_id'] = preset.id
-
-        
-    return redirect('view-cart')
-
-@login_required(login_url='login')
-def preset_list(request):
-    presets = MaterialPreset.objects.all().order_by('-created_at')
-    
-    paginator = Paginator(presets, 5)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {'page_obj': presets, 'page_obj': page_obj}
-    return render(request, 'Expense/preset_list.html', context)
-
-@login_required(login_url='login')
-def preset_detail(request, preset_id):
-    preset = get_object_or_404(MaterialPreset, id=preset_id)
-
-    context = {'preset': preset}
-    return render(request, 'Expense/preset_detail.html', context)
-
-@login_required(login_url='login')
-def edit_preset(request, preset_id):
-    preset = get_object_or_404(MaterialPreset, id=preset_id)
-    save_items = preset.preset_items.select_related('material')
-    
-    qty_changed = False
-    discount_changed = False
-    
-    if request.method == 'POST':
-        for item in save_items:
-            new_qty = int(request.POST.get(f'quantity_{item.id}'))
-            new_discount = int(request.POST.get(f"discount_{item.id}"))
-            new_name = request.POST.get(f'preset_{preset.id}')
-            
-            if new_name and new_name != preset.name:
-                preset.name = new_name
-                preset.user = request.user
-                preset.save()
-                messages.success(request, f"Preset Name has been updated. ")
-                    
-            if new_qty and new_qty != item.quantity:
-                item.quantity = int(new_qty)
-                item.save()
-                qty_changed = True
-                
-            if new_discount and new_discount != item.discount: 
-            
-                item.discount = int(new_discount)
-                item.save()
-                discount_changed = True
-                
-        if qty_changed == True and discount_changed == True:
-            messages.success(request, f"Both has been updated. ")
-
-        if qty_changed == True and not discount_changed == True:
-            messages.success(request, f"{item.material.name}'s quantity has been updated. ")
-                    
-        if discount_changed == True and not qty_changed == True:
-            messages.success(request, f"{item.material.name}'s discount has been updated. ")
-        
-        return redirect('material-preset-detail', preset.id)
-      
-        
-    context = {'preset': preset, 'items': save_items}
-    return render(request, 'Expense/edit_preset.html', context)
-
-@login_required(login_url='login')
-def adding_preset_to_cart(request, preset_id):
-    cart = request.session.get('cart', {})
-    
-    preset = get_object_or_404(MaterialPreset, id=preset_id)
-    items = preset.preset_items.select_related('material')
-    
-    if preset:
-        for item in items:
-            material = item.material
-            material_key = str(material.id)
-            
-            """
-            The cart.get() will get the material_key if it exists
-            then it will get the quantity else 0 and it will not 
-            throw a KeyError if there is a low stock in inventory
-            because in your condition you added both item's quantity 
-            and cart's quantity to check if it's low then It will not 
-            be added to the cart session.
-            """
-            existing_qty = cart.get(material_key, {}).get('quantity', 0)
-            
-            if material.quantity > item.quantity + existing_qty:
-                if material_key in cart:
-                    cart[material_key]['quantity'] += item.quantity
-                else:
-                    cart[material_key] = {
-                        'id': item.material.id,
-                        'name': item.material.name,
-                        'quantity': item.quantity,
-                    }
-            else:
-                messages.warning(request, f"{material.name} - Insufficient stock.")
-                    
-        messages.success(request, f"{preset.name} has added to purchase.")
-            
-    request.session['cart'] = cart
-    request.session.modified = True
-
-    return redirect('view-cart')
-
-@login_required(login_url='login')  
-def delete_preset(request, preset_id):
-    preset = get_object_or_404(MaterialPreset, id=preset_id)
-    
-    if request.method == 'POST':
-        preset.delete()
-        messages.success(request, f"{preset.name} has been deleted.")
-        return redirect('material-preset-list')
-
-    return render(request, 'Expense/delete_preset.html', {'preset': preset})
 
 @login_required(login_url='login')  
 def employee_create(request):

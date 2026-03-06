@@ -1,7 +1,7 @@
 from django.forms import ModelForm
 from django import forms
 
-from Expense.models import Purchase, PurchaseItem, MaterialPreset, MaterialPresetItem, Employee
+from Expense.models import Purchase, PurchaseItem, Employee
 
 # Create your forms here.
 
@@ -28,23 +28,7 @@ class PurchaseFilterForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-class PresetForm(ModelForm):
-    class Meta:
-        model = MaterialPreset
-        fields = ['name']
         
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-        self.fields['name'].required = False
-
-
-class PresetItemForm(ModelForm):
-    class Meta:
-        model = MaterialPresetItem
-        fields = ['material', 'quantity']
-        
-
 class EmployeeForm(ModelForm):
     class Meta:
         model = Employee

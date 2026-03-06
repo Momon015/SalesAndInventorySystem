@@ -30,7 +30,6 @@ class PurchaseQuerySet(models.QuerySet):
     def average_total_cost(self):
         return self.aggregate(monthly_average_cost=Coalesce(Avg('total_cost'), Value(Decimal('0'))))['monthly_average_cost']
     
-
     
 class Purchase(TimeStampModel):
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -84,9 +83,6 @@ class Purchase(TimeStampModel):
     def quantity_items(self):
         return [item.quantity for item in self.materials.all()]
 
-
-
-        
 class PurchaseItem(TimeStampModel):
     purchase = models.ForeignKey(Purchase, on_delete=models.SET_NULL, related_name='materials', null=True)
     material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name='items')
@@ -108,38 +104,11 @@ class PurchaseItem(TimeStampModel):
     def total_item_discount(self):
         return self.total_price_per_item - self.discount
     
-
-  
     # def material_discount(self):
     #     if self.discount:
     #         return self.total_price_per_item - self.discount
     #     return self.total_price_per_item
 
-class MaterialPreset(TimeStampModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='presets')
-    name = models.CharField(max_length=255)
-    is_active = models.BooleanField(default=False)
-    
-    def __str__(self):
-        return self.name
-
-class MaterialPresetItem(models.Model):
-    class Meta:
-        unique_together = ('preset', 'material')
-        ordering = ['id']
-        
-    preset = models.ForeignKey(MaterialPreset, on_delete=models.CASCADE, related_name='preset_items')
-    material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name='preset_items')
-    quantity = models.PositiveIntegerField(default=1)
-    discount = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
-    
-    def __str__(self):
-        return f"{self.material} x {self.quantity} - Discount: {self.discount}"
-    
-    @property
-    def total_line_cost(self):
-        return self.material.price * self.quantity
- 
 class EmployeeQuerySet(models.QuerySet):
     def total_daily_rate(self):
         return self.aggregate(total_daily_rate=Sum('daily_rate'))['total_daily_rate'] or 0

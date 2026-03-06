@@ -20,7 +20,7 @@ class MaterialFilterForm(forms.Form):
 class MaterialForm(ModelForm):
     class Meta:
         model = Material
-        fields = ['name', 'price', 'category', 'quantity']
+        fields = ['name', 'price', 'category', 'quantity', 'unit']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

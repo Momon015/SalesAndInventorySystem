@@ -1,220 +1,223 @@
-{% extends "main.html" %}
-
+{% extends 'main.html' %}
 {% block content %}
-<div class="container-fluid py-3 py-lg-4">
 
-  <!-- PAGE HEADER -->
-  <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
-    <div class="mb-2 mb-lg-0">
-      <h4 class="fw-semibold mb-1 d-flex align-items-center gap-2">
-        <i class="bi bi-boxes text-primary"></i>
-        Material Details
-      </h4>
-      <small class="text-muted">
-        View pricing and stock information for this raw material.
-      </small>
+<!-- FLASH MESSAGES -->
+{% if messages %}
+<div class="toast-container" aria-live="polite" aria-atomic="true">
+  {% for message in messages %}
+    <div class="toast-message toast-{{ message.tags }}">
+      {% if message.tags == "error" %}
+        <i class="bi bi-exclamation-circle-fill me-2"></i>
+      {% elif message.tags == "success" %}
+        <i class="bi bi-check-circle-fill me-2"></i>
+      {% elif message.tags == "info" %}
+        <i class="bi bi-info-circle-fill me-2"></i>
+      {% elif message.tags == "warning" %}
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {% endif %}
+      {{ message }}
     </div>
-    <div class="d-flex gap-2">
-      <!-- EDIT BUTTON -->
-      <a href="{% url 'material-update' material.slug %}"
-         class="btn btn-primary btn-sm rounded-3">
-        <i class="bi bi-pencil me-1"></i>
-        Edit material
-      </a>
-      <!-- DELETE BUTTON -->
-        <a href="{% url 'material-delete' material.slug %}"
-        class="btn btn-outline-danger btn-sm rounded-3">
-        <i class="bi bi-trash me-1"></i>
-        Delete
-        </a>
-      <a href="{% url 'material-list' %}" class="btn btn-light border btn-sm rounded-3">
-        <i class="bi bi-arrow-left me-1">
-            Go Back
-        </i>
+  {% endfor %}
+</div>
+{% endif %}
+
+<style>
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.toast-message {
+  min-width: 240px;
+  max-width: 360px;
+  padding: 0.75rem 1rem;
+  border-radius: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: toast-in 0.35s ease forwards,
+             toast-out 0.35s ease forwards 2.8s;
+}
+.toast-success { background: #e9f8ef; color: #0f5132; border-left: 4px solid #198754; }
+.toast-error,
+.toast-danger  { background: #fdecec; color: #842029; border-left: 4px solid #dc3545; }
+.toast-warning { background: #fff4e5; color: #664d03; border-left: 4px solid #ffc107; }
+.toast-info    { background: #e7f1ff; color: #084298; border-left: 4px solid #0d6efd; }
+
+@keyframes toast-in  { to { opacity: 1; transform: translateY(0); } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(-10px); } }
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".toast-message").forEach(t => {
+    setTimeout(() => t.remove(), 3200);
+  });
+});
+</script>
+
+<div class="container-fluid py-4">
+
+  <!-- Page Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+      <h4 class="mb-1 fw-semibold d-flex align-items-center gap-2">
+        <i class="bi bi-bag text-primary"></i>
+        Material Detail
+      </h4>
+      <div class="text-muted small">SKU: {{ material.slug }}</div>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{% url 'material-list' %}" class="btn btn-sm btn-light border rounded-3">
+        <i class="bi bi-arrow-left me-1"></i>Back to materials
       </a>
     </div>
   </div>
 
-  <div class="row g-3 g-lg-4">
+  <div class="row g-4">
 
-    <!-- LEFT: MAIN DETAIL CARD -->
+    <!-- Left: Main material info -->
     <div class="col-lg-8 col-xl-9">
-      <div class="card border-0 shadow-sm rounded-4">
-        <div class="card-header bg-white border-bottom px-3 px-lg-4 py-2 py-lg-3">
-          <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex flex-column">
-              <span class="text-uppercase small text-muted">Material</span>
-              <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
-                {{ material.name }}
-              </h5>
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+
+        <div class="card-header bg-white border-0 rounded-top-4 py-3 d-flex justify-content-between align-items-center px-3 px-lg-4">
+          <div class="d-flex align-items-center gap-3">
+            <div class="bg-primary bg-opacity-10 text-primary rounded-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+              <i class="bi bi-bag fs-5"></i>
             </div>
-            <div class="text-end">
-              <span class="text-uppercase small text-muted d-block">Current price</span>
-              <span class="fs-5 fw-semibold text-dark">
-                ₱{{ material.price|floatformat:2 }}
-              </span>
+            <div>
+              <h5 class="mb-0 fw-semibold">{{ material.name|capfirst }}</h5>
+              <div class="small text-muted">
+                Category:
+                {% if material.category %}
+                  <span class="badge bg-light text-secondary border">{{ material.category.name }}</span>
+                {% else %}
+                  <span class="text-muted">Uncategorized</span>
+                {% endif %}
+              </div>
             </div>
+          </div>
+          <div class="text-end">
+            <div class="text-muted small">Price</div>
+            <div class="fs-5 fw-bold text-primary">₱{{ material.price|floatformat:2 }}</div>
           </div>
         </div>
 
-        <div class="card-body px-3 px-lg-4 py-3">
+        <div class="card-body p-4">
 
-          <!-- Basic info -->
+          <!-- Quick stats -->
           <div class="row g-3 mb-3">
             <div class="col-md-4">
-              <div class="border rounded-3 px-3 py-2 bg-light">
-                <div class="text-muted text-uppercase small">Category</div>
-                <div class="fw-semibold">
-                  {{ material.category.name|default:"Uncategorized" }}
-                </div>
+              <div class="border rounded-3 p-3 bg-light">
+                <div class="text-muted small mb-1">Price</div>
+                <div class="fw-semibold">₱{{ material.price|floatformat:2 }}</div>
               </div>
             </div>
             <div class="col-md-4">
-              <div class="border rounded-3 px-3 py-2 bg-light">
-                <div class="text-muted text-uppercase small">Quantity</div>
-                <div class="fw-semibold
-                  {% if material.quantity <= 0 %}
-                    text-danger
-                  {% elif material.quantity <= 10 %}
-                    text-warning
-                  {% else %}
-                    text-success
-                  {% endif %}
-                ">
-                  {{ material.quantity }}
-                </div>
+              <div class="border rounded-3 p-3 bg-light">
+                <div class="text-muted small mb-1">Unit</div>
+                <div class="fw-semibold">{{ material.get_unit_display }}</div>
               </div>
             </div>
             <div class="col-md-4">
-              <div class="border rounded-3 px-3 py-2 bg-light">
-                <div class="text-muted text-uppercase small">Status</div>
-                <div>
-                  {% if material.quantity <= 0 %}
-                    <span class="badge bg-danger-subtle text-danger rounded-pill px-3">
-                      Out of Stock
-                    </span>
-                  {% elif material.quantity <= 10 %}
-                    <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
-                      Low Stock
-                    </span>
-                  {% else %}
-                    <span class="badge bg-success-subtle text-success rounded-pill px-3">
-                      Available
-                    </span>
-                  {% endif %}
-                </div>
+              <div class="border rounded-3 p-3 bg-light">
+                <div class="text-muted small mb-1">Category</div>
+                <div class="fw-semibold">{{ material.category.name|default:"Uncategorized" }}</div>
               </div>
             </div>
           </div>
 
-          <!-- Notes / context -->
-          <div class="border rounded-3 px-3 py-2 bg-body-tertiary small">
-            <div class="text-muted text-uppercase small mb-1">Notes</div>
-            <p class="mb-1 text-muted">
-              Use this material in recipes, products, or purchase orders. Keep price and quantity updated to maintain accurate cost and stock calculations in your POS.
-            </p>
+          <!-- Description -->
+          <div class="border-top pt-3 mt-3">
+            {% if material.description %}
+              <h6 class="text-muted mb-2">Description</h6>
+              <div class="p-3 border rounded-3 bg-light">
+                {{ material.description|linebreaksbr }}
+              </div>
+            {% else %}
+              <div class="text-muted fst-italic small">
+                No description provided for this material.
+              </div>
+            {% endif %}
           </div>
 
-        </div>
-
-        <div class="card-footer bg-white border-0 px-3 px-lg-4 py-2 small text-muted">
-          Last updated:
-          {% if material.updated_at %}
-            {{ material.updated_at|date:"M d, Y · h:i A" }}
-          {% else %}
-            Not available
-          {% endif %}
         </div>
       </div>
     </div>
 
-    <!-- RIGHT: POS-STYLE CONTEXT PANEL -->
+    <!-- Right: Quick actions panel -->
     <div class="col-lg-4 col-xl-3">
       <div class="card border-0 shadow-sm rounded-4 h-100">
 
-        <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
+        <div class="card-header bg-dark text-white rounded-top-4 px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-speedometer2"></i>
-            <h6 class="mb-0 fw-semibold">Stock context</h6>
+            <i class="bi bi-info-circle"></i>
+            <h6 class="mb-0 fw-semibold">Material Snapshot</h6>
           </div>
           <small class="text-white-50 d-none d-sm-inline">Quick view</small>
         </div>
 
         <div class="card-body px-3 px-lg-4 py-3 small d-flex flex-column gap-3">
 
-          <!-- Quantity + status -->
+          <!-- Price info -->
           <div class="border rounded-3 px-2 py-2 bg-light">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-              <span class="text-muted text-uppercase small">On hand</span>
-              {% if material.quantity <= 0 %}
-                <span class="badge bg-danger-subtle text-danger rounded-pill px-3">
-                  Out of Stock
-                </span>
-              {% elif material.quantity <= 10 %}
-                <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
-                  Low Stock
-                </span>
-              {% else %}
-                <span class="badge bg-success-subtle text-success rounded-pill px-3">
-                  Available
-                </span>
-              {% endif %}
+            <div class="text-muted text-uppercase small mb-2">
+              <i class="bi bi-cash-stack me-1"></i>Price Info
             </div>
-            <div class="fs-5 fw-semibold
-              {% if material.quantity <= 0 %}
-                text-danger
-              {% elif material.quantity <= 10 %}
-                text-warning
-              {% else %}
-                text-success
-              {% endif %}
-            ">
-              {{ material.quantity }}
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="text-muted">Price per unit</span>
+              <span class="fw-semibold">₱{{ material.price|floatformat:2 }}</span>
+            </div>
+            <div class="d-flex justify-content-between small">
+              <span class="text-muted">Unit</span>
+              <span class="fw-semibold">
+                <span class="badge text-bg-secondary rounded-pill">{{ material.get_unit_display }}</span>
+              </span>
             </div>
           </div>
 
-          <!-- Price card -->
+          <!-- Category -->
           <div class="border rounded-3 px-2 py-2 bg-body-tertiary">
-            <div class="text-muted text-uppercase small mb-1">Current cost</div>
-            <div class="fs-5 fw-semibold text-dark">
-              ₱{{ material.price|floatformat:2 }}
+            <div class="text-muted text-uppercase small mb-2">
+              <i class="bi bi-tags me-1"></i>Category
             </div>
-            <div class="small text-muted">
-              Update this when supplier prices change so recipe and product costs stay accurate.
+            <div class="d-flex justify-content-between small">
+              <span class="text-muted">Type</span>
+              <span class="fw-semibold">
+                <span class="badge text-bg-light text-dark border">
+                  {{ material.category.name|default:"Uncategorized" }}
+                </span>
+              </span>
             </div>
           </div>
 
-          <!-- Category / usage -->
+          <!-- Actions -->
           <div class="border rounded-3 px-2 py-2">
-            <div class="text-muted text-uppercase small mb-1">Category</div>
-            <div class="fw-semibold mb-1">
-              {{ material.category.name|default:"Uncategorized" }}
-            </div>
-            <div class="small text-muted">
-              Group materials by category to simplify filtering in inventory and purchasing screens.
-            </div>
-          </div>
-
-          <!-- POS-style tip -->
-          <div class="alert alert-light border-0 mb-0">
-            <div class="d-flex">
-              <div class="me-2">
-                <i class="bi bi-lightning-charge text-warning"></i>
-              </div>
-              <div>
-                <div class="fw-semibold small">Reorder habits</div>
-                <div class="small text-muted">
-                  Decide a minimum quantity for this material and regularly check low-stock items to avoid last-minute shortages during service.
-                </div>
-              </div>
+            <div class="text-muted text-uppercase small mb-2">Actions</div>
+            <div class="d-grid gap-2">
+              <a href="{% url 'add-cart' material.id %}" class="btn btn-sm btn-primary">
+                <i class="bi bi-basket me-1"></i>Add to Cart
+              </a>
+              <a href="{% url 'material-update' material.slug %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-pencil-square me-1"></i>Edit Material
+              </a>
+              <a href="{% url 'material-delete' material.slug %}" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash me-1"></i>Delete Material
+              </a>
             </div>
           </div>
 
         </div>
-
       </div>
     </div>
 
   </div>
 </div>
-{% endblock %}
+
+{% endblock content %}
