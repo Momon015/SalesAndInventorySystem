@@ -1,0 +1,127 @@
+{% extends "main.html" %}
+{% block content %}
+
+<div class="container-fluid py-3 py-lg-4">
+
+  <!-- PAGE HEADER -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+    <div>
+      <h4 class="fw-semibold mb-1 d-flex align-items-center gap-2">
+        <i class="bi bi-tags text-primary"></i>
+        Edit Category
+      </h4>
+      <small class="text-muted">Update this category's name and type.</small>
+    </div>
+    <a href="{% url 'category-list' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i>Back to categories
+    </a>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-12 col-xl-9">
+      <div class="row g-3 g-lg-4">
+
+        <!-- LEFT: FORM -->
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm rounded-4">
+
+            <div class="card-header bg-white border-bottom px-4 py-3">
+              <h6 class="mb-0 fw-semibold">Category Details</h6>
+            </div>
+
+            <div class="card-body px-4 py-3">
+              <form method="POST" autocomplete="off" novalidate>
+                {% csrf_token %}
+
+                <div class="row g-3">
+
+                  <!-- Name -->
+                  <div class="col-12">
+                    <label for="{{ form.name.id_for_label }}" class="form-label fw-medium small text-uppercase">
+                      {{ form.name.label }}
+                      {% if form.name.field.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    <div class="input-group input-group-sm">{{ form.name }}</div>
+                    {% if form.name.errors %}
+                      <div class="text-danger small mt-1">{{ form.name.errors|striptags }}</div>
+                    {% endif %}
+                  </div>
+
+                  <!-- Category Type -->
+                  <div class="col-12">
+                    <label for="{{ form.category_type.id_for_label }}" class="form-label fw-medium small text-uppercase">
+                      {{ form.category_type.label }}
+                      {% if form.category_type.field.required %}<span class="text-danger">*</span>{% endif %}
+                    </label>
+                    <div class="input-group input-group-sm">{{ form.category_type }}</div>
+                    {% if form.category_type.errors %}
+                      <div class="text-danger small mt-1">{{ form.category_type.errors|striptags }}</div>
+                    {% endif %}
+                  </div>
+
+                </div>
+
+                <div class="d-flex justify-content-end border-top pt-3 mt-4 gap-2">
+                  <a href="{% url 'category-list' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                  <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-check-circle me-1"></i>Save Changes
+                  </button>
+                </div>
+
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: INFO PANEL -->
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-dark text-white px-4 py-3">
+              <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle"></i>
+                <h6 class="mb-0 fw-semibold">About Categories</h6>
+              </div>
+            </div>
+            <div class="card-body px-4 py-3 small d-flex flex-column gap-3">
+
+              <!-- What is a category -->
+              <div class="border rounded-3 px-2 py-2 bg-body-tertiary">
+                <div class="text-muted text-uppercase small mb-1">
+                  <i class="bi bi-tag me-1"></i>Name
+                </div>
+                <div class="text-muted">
+                  Use a short, clear name that describes the group — like <strong>Vegetables</strong>, <strong>Beverages</strong>, or <strong>Packaging</strong>.
+                </div>
+              </div>
+
+              <!-- Category type -->
+              <div class="border rounded-3 px-2 py-2 bg-body-tertiary">
+                <div class="text-muted text-uppercase small mb-1">
+                  <i class="bi bi-grid me-1"></i>Category Type
+                </div>
+                <div class="text-muted mb-2">
+                  Type determines where this category appears:
+                </div>
+                <div class="d-flex flex-column gap-1">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge text-bg-secondary rounded-pill">Material</span>
+                    <span class="text-muted">for market purchases & ingredients</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge text-bg-primary rounded-pill">Product</span>
+                    <span class="text-muted">for items you sell to customers</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

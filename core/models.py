@@ -22,7 +22,7 @@ class Category(SlugModel):
     )
     
     name = models.CharField(max_length=100)
-    category_type = models.CharField(max_length=100, choices=CATEGORY_TYPE_CHOICES, null=True, blank=True) # which app
+    category_type = models.CharField(max_length=100, choices=CATEGORY_TYPE_CHOICES, default='material') # which app
     
     def __str__(self):
         return f"Category: {self.category_type} - {self.name}"

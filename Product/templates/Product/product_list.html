@@ -263,7 +263,7 @@
                         <span class="badge bg-danger-subtle text-danger rounded-pill px-3">
                           Out of stock
                         </span>
-                      {% elif product.prepared_quantity <= 5 %}
+                      {% elif product.prepared_quantity <= 50 %}
                         <span class="badge bg-warning-subtle text-warning rounded-pill px-3">
                           Low stock
                         </span>
@@ -434,7 +434,11 @@
             <div class="d-grid gap-2">
               <a href="{% url 'product-create' %}" class="btn btn-sm btn-primary">
                 <i class="bi bi-plus-circle me-1"></i>
-                Add product to catalog
+                Add product
+              </a>
+              <a href="{% url 'category-list' %}?category_type=product" class="btn btn-sm btn-outline-info">
+                <i class="bi-kanban"></i>
+                Product's category
               </a>
               <a href="{% url 'product-preset-list' %}" class="btn btn-sm btn-outline-secondary">
                 <i class="bi bi-list-ul me-1"></i>
