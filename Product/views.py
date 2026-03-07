@@ -61,7 +61,7 @@ def product_list(request):
             products = products.filter(prepared_quantity__gte=50)
             
         elif stock_filter == 'low':
-            products = products.filter(Q(prepared_quantity__lte=50) & Q(prepared_quantity__gte=1))
+            products = products.filter(Q(prepared_quantity__lte=49) & Q(prepared_quantity__gte=1))
         elif stock_filter == 'none':
             products = products.filter(prepared_quantity=0)
     

@@ -180,7 +180,7 @@ def add_to_cart(request, id):
                 'name': material.name,
                 'price': float(material.price),
                 'quantity': 1,
-                'discount': 0,
+                'discount': str(0),
             }
             messages.success(request, f"{material.name} added to purchase.")
     else:
@@ -229,7 +229,8 @@ def view_cart(request):
     for material_id, data in cart.items():
         material = get_object_or_404(Material, id=material_id)
         material_slug = material.slug
-        discount = data.get('discount', 0)
+        str_discount = data.get('discount', 0)
+        discount = Decimal(str_discount)
         quantity = data.get('quantity', 1)
         
         # computations 
@@ -268,7 +269,8 @@ def view_cart_summary(request):
     for material_id, data in cart.items():
         material = get_object_or_404(Material, id=material_id)
         material_slug = material.slug
-        discount = data.get('discount', 0)
+        str_discount = data.get('discount', 0)
+        discount = Decimal(str_discount)
         quantity = data['quantity']
         
         # computations 
@@ -313,7 +315,8 @@ def confirm_purchase_summary(request):
 
             for material_id, data in cart.items():
                 material = get_object_or_404(Material, id=material_id)
-                discount = data.get('discount', 0)
+                str_discount = data.get('discount', 0)
+                discount = Decimal(str_discount)
                 quantity = data['quantity']
                 
                 # computations 
@@ -327,8 +330,8 @@ def confirm_purchase_summary(request):
                 PurchaseItem.objects.create(
                     purchase=purchase,
                     material=material,
-                    discount=data.get('discount', 0),
-                    quantity=data['quantity'],
+                    discount=discount,
+                    quantity=quantity,
                 )
                 
     except ValidationError:
@@ -408,7 +411,8 @@ def cart_edit_material(request, id):
     material_key = str(material.id)
     
     if request.method == 'POST':
-        quantity = int(request.POST.get('quantity', 1))
+        raw_qty = request.POST.get('quantity')
+        quantity = int(raw_qty) if raw_qty else 0
         
         if material.quantity >= quantity:
         
@@ -429,8 +433,9 @@ def cart_discount_material(request):
     
     for material_id, data in cart.items():
 
-        discount_input = int(request.POST.get(f"discount_{material_id}", 0))
-        cart[material_id]['discount'] = discount_input
+        raw_discount = request.POST.get(f"discount_{material_id}")
+        discount_input = Decimal(raw_discount) if raw_discount else 0
+        cart[material_id]['discount'] = str(discount_input)
     
     request.session['cart'] = cart
     request.session.modified = True

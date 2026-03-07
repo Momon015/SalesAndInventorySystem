@@ -90,6 +90,8 @@
                 </span>
                 <span class="fw-semibold">₱{{ subtotal|floatformat:2 }}</span>
               </div>
+              
+              {% if total_discount %}
               <div class="d-flex justify-content-between">
                 <span class="text-muted">
                   <i class="bi bi-percent me-1 text-success"></i>
@@ -97,6 +99,8 @@
                 </span>
                 <span class="fw-semibold text-danger">₱{{ total_discount|floatformat:2 }}</span>
               </div>
+              {% endif %}
+
               <hr class="my-2">
               <div class="d-flex justify-content-between align-items-center">
                 <span class="fw-semibold">

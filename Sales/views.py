@@ -65,7 +65,7 @@ def sale_list(request):
     month = now.month
     today = now.day
     year = now.year
-    iso_year, iso_weekday, iso_week = now.isocalendar()
+    iso_year, iso_week, iso_weekday = now.isocalendar()
     last_year = iso_year - 1
     print(last_year)
     period = request.GET.get('period')
@@ -100,6 +100,7 @@ def sale_list(request):
                 Q(line_count__iexact=search)
 
             )
+            
         if period == 'last_week':
             if iso_week == 1:
                 last_year_of_last_week = date(last_year, 12, 28).isocalendar()[1]
@@ -325,7 +326,8 @@ def confirm_view_summary(request):
     try:
         with transaction.atomic():
             sale_obj = Sale.objects.create(user=request.user, total_cost=0)
-            employee_ids = request.session.get('selected_employee_ids')
+
+            employee_ids = request.session.get('selected_employee_ids', [])
             print('employee_ids', employee_ids)
             employees = Employee.objects.filter(id__in=employee_ids)
             print('employees', employees)

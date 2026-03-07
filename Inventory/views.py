@@ -89,7 +89,7 @@ def material_list(request):
         'page_obj': page_obj, 
         'cart_items': cart_items,
         'total': total,
-        'section': 'market',  
+        'section': 'material',  
         }
     
     return render(request, 'Inventory/material_list.html', context)
@@ -108,14 +108,14 @@ def material_create(request):
     else:
         form = MaterialForm()
         
-    context = {'form': form, 'section': 'market'}
+    context = {'form': form, 'section': 'material'}
     return render(request, 'Inventory/material_create.html', context)
 
 @login_required(login_url='login')
 def material_detail(request, slug):
     material = get_object_or_404(Material, slug=slug)
     
-    context = {'material': material, 'section': 'market'}
+    context = {'material': material, 'section': 'material'}
     return render(request, 'inventory/material_detail.html', context)
 
 @login_required(login_url='login')
@@ -132,7 +132,7 @@ def material_update(request, slug):
     else:
         form = MaterialForm(instance=material)
         
-    context = {'form': form, 'material': material, 'section': 'market'}
+    context = {'form': form, 'material': material, 'section': 'material'}
     return render(request, 'Inventory/material_update.html', context)
 
 @login_required(login_url='login')
@@ -144,7 +144,7 @@ def material_delete(request, slug):
         messages.success(request, f"{material.name} successfully deleted.")
         return redirect('material-list')
     
-    context = {'material': material, 'section': 'market'}
+    context = {'material': material, 'section': 'material'}
     return render(request, 'Inventory/material_delete.html', context)
 
 @login_required(login_url='login')  
@@ -209,8 +209,6 @@ def adding_preset_to_cart(request, preset_id):
             else:
                 messages.warning(request, f"{material.name} - Insufficient quantity.")
                     
-        
-            
     request.session['cart'] = cart
     request.session.modified = True
 
@@ -224,14 +222,14 @@ def preset_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    context = {'page_obj': presets, 'page_obj': page_obj, 'section': 'market'}
+    context = {'page_obj': presets, 'page_obj': page_obj, 'section': 'material'}
     return render(request, 'Inventory/preset_list.html', context)
 
 @login_required(login_url='login')
 def preset_detail(request, preset_id):
     preset = get_object_or_404(MaterialPreset, id=preset_id)
 
-    context = {'preset': preset, 'section': 'market'}
+    context = {'preset': preset, 'section': 'material'}
     return render(request, 'Inventory/preset_detail.html', context)
 
 @login_required(login_url='login')
@@ -275,7 +273,7 @@ def edit_preset(request, preset_id):
         
         return redirect('material-preset-detail', preset.id)
       
-    context = {'preset': preset, 'items': save_items, 'section': 'market'}
+    context = {'preset': preset, 'items': save_items, 'section': 'material'}
     return render(request, 'Inventory/edit_preset.html', context)
 
 @login_required(login_url='login')  
@@ -287,5 +285,5 @@ def delete_preset(request, preset_id):
         messages.success(request, f"{preset.name} has been deleted.")
         return redirect('material-preset-list')
     
-    context = {'preset': preset, 'section': 'market'}
+    context = {'preset': preset, 'section': 'material'}
     return render(request, 'Inventory/delete_preset.html', context)

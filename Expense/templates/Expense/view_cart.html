@@ -115,6 +115,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 });
+
+function stepDiscount(id, delta) {
+  const input = document.getElementById(id);
+  if (!input) return;
+  let value = parseFloat(input.value || 0);
+  value = isNaN(value) ? 0 : value + delta;
+  if (value < 0) value = 0;
+  input.value = value.toFixed(2);
+}
+
 </script>
 
 <!-- FLASH MESSAGES -->
@@ -232,12 +242,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
                   <!-- DISCOUNT -->
                   <td class="text-center">
-                    <input type="number" name="discount_{{ item.id }}"
-                           form="discountForm"
-                           min="0" step="0.01"
-                           class="form-control form-control-sm text-center"
-                           style="width:80px"
-                           value="{{ item.discount }}">
+                    <div class="d-flex justify-content-center align-items-center gap-1">
+                      <button type="button"
+                              class="btn btn-outline-secondary btn-sm"
+                              style="width:30px; height:30px; padding:0;"
+                              onclick="stepDiscount('discount_{{ item.id }}', -1)">−</button>
+                      <input type="number"
+                            name="discount_{{ item.id }}"
+                            id="discount_{{ item.id }}"
+                            form="discountForm"
+                            min="0"
+                            step="1"
+                            class="form-control form-control-sm text-center no-arrows"
+                            style="width:70px; height:30px; padding:0;"
+                            value="{{ item.discount|floatformat:0 }}">
+                      <button type="button"
+                              class="btn btn-outline-secondary btn-sm"
+                              style="width:30px; height:30px; padding:0;"
+                              onclick="stepDiscount('discount_{{ item.id }}', 1)">+</button>
+                    </div>
                   </td>
 
                   <!-- LINE TOTAL -->
