@@ -16,17 +16,17 @@ from django.core.exceptions import ValidationError
 # Create your models here.
 
 class SaleQuerySet(models.QuerySet):
-    def total_sold(self):
-        return self.aggregate(total_sold=Sum('total_cost'))['total_sold']
+    def total_revenue(self):
+        return self.aggregate(total_revenue=Sum('total_revenue'))['total_revenue']
 
-    def average_total_sold(self):
-        return self.aggregate(average_total_sold=Avg('total_cost'))['average_total_sold']
+    def average_total_revenue(self):
+        return self.aggregate(average_total_revenue=Avg('total_revenue'))['average_total_revenue']
     
 
 class Sale(TimeStampModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales', null=True, blank=True)
     date = models.DateField(auto_now_add=True, db_index=True)
-    total_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    total_revenue = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     line_count = models.PositiveIntegerField(default=0)
     
     objects = SaleQuerySet.as_manager()
@@ -58,12 +58,18 @@ class SaleItem(models.Model):
             raise ValidationError('Quantity should not exceed to prepared quantity.')
     
     @property
+    def total_cost_per_item(self):
+        return self.cost_price * self.quantity
+
+    @property
     def unsold_product_cost(self):
         return self.cost_price * self.unsold_quantity
     
     @property
     def total_sold_per_item(self):
         return self.price_at_sale * self.quantity
+    
+    
     
 class SaleEmployee(TimeStampModel):
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name='sale_employees', null=True, blank=True)

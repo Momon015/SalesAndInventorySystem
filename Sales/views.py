@@ -70,8 +70,8 @@ def sale_list(request):
     print(last_year)
     period = request.GET.get('period')
     
-    total_sold = sales.total_sold()
-    average_sold_items = sales.average_total_sold()
+    total_revenue = sales.total_revenue()
+    average_total_revenue = sales.average_total_revenue()
     total_sales_count = sales.count()
     
     if form.is_valid():
@@ -121,8 +121,8 @@ def sale_list(request):
         if filter_kwargs:
             sales = sales.filter(**filter_kwargs)
             
-        total_sold = sales.total_sold()
-        average_sold_items = sales.average_total_sold()
+        total_revenue = sales.total_revenue()
+        average_total_revenue = sales.average_total_revenue()
         total_sales_count = sales.count()
             
     paginator = Paginator(sales, 6)
@@ -132,8 +132,8 @@ def sale_list(request):
     context = {
         'sales': page_obj.object_list, 
         'page_obj': page_obj,
-        'total_sold': total_sold,
-        'average_sold_items': average_sold_items,
+        'total_revenue': total_revenue,
+        'average_total_revenue': average_total_revenue,
         'total_sales_count': total_sales_count,
         'section': 'sale'
     }
@@ -185,11 +185,8 @@ def add_to_sales(request, product_id):
 @login_required(login_url='login')
 def view_sale(request):
     sale = request.session.get('sale', {})
-    net_profit = 0
     total_revenue = 0
     total_cost_price = 0
-    total_waste_cost = 0
-
     employees = Employee.objects.all()
     # after confirming who's in shift it will save the checkbox.
     selected_employee_ids = request.session.get('selected_employee_ids', [])
@@ -209,8 +206,6 @@ def view_sale(request):
         
         
             # computations
-            product_waste_cost = Decimal(cost_price) * unsold_quantity
-            total_waste_cost += product_waste_cost
             total_cost_price_per_line = Decimal(cost_price) * quantity         
             
             total_cost_price += total_cost_price_per_line
@@ -218,20 +213,16 @@ def view_sale(request):
             line_total = product.selling_price * quantity
             total_revenue += line_total
             
-            total_receipt_cost_per_line = (product.selling_price * quantity) - Decimal(total_cost_price_per_line) - product_waste_cost
-            net_profit = total_revenue - total_cost_price - product_waste_cost - total_salary_cost
-                     
             items.append({
                 'id': product.id,
                 'name': product.name,
                 'selling_price': product.selling_price,
                 'quantity': quantity,
                 'cost_price': cost_price,
-                'product_waste_cost': product_waste_cost, 
                 'line_total': line_total,
                 'unsold_quantity': unsold_quantity,
                 'total_cost_price_per_line': total_cost_price_per_line,
-                'total_receipt_cost_per_line': total_receipt_cost_per_line,
+                
             })
     
     line_count = len(items)
@@ -242,9 +233,7 @@ def view_sale(request):
     context = {
         'items': items, 
         'total_revenue': total_revenue, 
-        'net_profit': net_profit, 
         'total_cost_price': total_cost_price, 
-        'total_waste_cost': total_waste_cost, 
         'employees': employees, 
         'selected_employee_ids': selected_employee_ids, 
         'total_salary_cost': total_salary_cost,
@@ -256,11 +245,9 @@ def view_sale(request):
 @login_required(login_url='login')
 def view_session_summary(request):
     sale = request.session.get('sale', {})
-    net_profit = 0
     total_revenue = 0
     total_cost_price = 0
-    total_waste_cost = 0
-    
+
     total_salary_cost = Decimal(request.session.get('total_salary_cost', 0))
     print('total_salary_cost', total_salary_cost)
     
@@ -274,17 +261,14 @@ def view_session_summary(request):
             unsold_quantity = data.get('unsold_quantity', 0)
             
             # computations
-            product_waste_cost = Decimal(cost_price) * unsold_quantity
-            total_waste_cost += product_waste_cost
+
             
             total_cost_price_per_line = Decimal(cost_price) * quantity
             total_cost_price += total_cost_price_per_line
             
             line_total = product.selling_price * quantity
             total_revenue += line_total
-            
-            net_profit = total_revenue - total_cost_price - total_waste_cost - Decimal(total_salary_cost)
-            
+   
             items.append({
                 'id': product.id,
                 'name': product.name,
@@ -292,7 +276,6 @@ def view_session_summary(request):
                 'cost_price': cost_price,
                 'quantity': quantity,
                 'unsold_quantity': unsold_quantity,
-                'product_waste_cost': product_waste_cost,
                 'total_cost_price_per_line': total_cost_price_per_line,
                 'line_total': line_total,
                 
@@ -303,9 +286,7 @@ def view_session_summary(request):
     context = {
         'items': items, 
         'total_revenue': total_revenue, 
-        'net_profit': net_profit, 
         'total_cost_price': total_cost_price, 
-        'total_waste_cost': total_waste_cost, 
         'employees': 'employees', 
         'total_salary_cost': total_salary_cost, 
         'section': 'sale'
@@ -319,13 +300,12 @@ def confirm_view_summary(request):
     line_count = request.session.get('line_count')
     total_salary_cost = request.session.get('total_salary_cost', 0)
     net_profit = 0
-    total_waste_cost = 0
     total_revenue = 0
     total_cost_price = 0
     
     try:
         with transaction.atomic():
-            sale_obj = Sale.objects.create(user=request.user, total_cost=0)
+            sale_obj = Sale.objects.create(user=request.user, total_revenue=0)
 
             employee_ids = request.session.get('selected_employee_ids', [])
             print('employee_ids', employee_ids)
@@ -341,16 +321,12 @@ def confirm_view_summary(request):
                 unsold_quantity = data.get('unsold_quantity', 0)
                 
                 # computations 
-                product_waste_cost = Decimal(cost_price) * unsold_quantity
-                total_waste_cost += product_waste_cost        
-                
                 total_cost_price_per_line = Decimal(cost_price) * quantity
                 total_cost_price += total_cost_price_per_line
                 
                 line_total = product.selling_price * quantity
                 total_revenue += line_total
-                net_profit = total_revenue - total_cost_price - total_waste_cost - Decimal(total_salary_cost)
-                
+
                 SaleItem.objects.create(
                     sale=sale_obj,
                     product=product,
@@ -378,7 +354,7 @@ def confirm_view_summary(request):
         return redirect('view-sale')  # exits early if error occurs
     
     # net profit 
-    sale_obj.total_cost = max(net_profit, 0)
+    sale_obj.total_revenue = max(total_revenue, 0)
     sale_obj.line_count = line_count
     sale_obj.save()
     
@@ -398,10 +374,9 @@ def view_sale_summary(request, sale_id):
     total_salary_cost = sale.sale_employees.aggregate(total_salary_cost=Sum('daily_rate'))['total_salary_cost'] or 0
     print(total_salary_cost)
     
-    net_profit = 0
     total_revenue = 0
     total_cost_price = 0
-    total_waste_cost = 0
+
     
     items = []
 
@@ -411,17 +386,12 @@ def view_sale_summary(request, sale_id):
         unsold_quantity = item.unsold_quantity
         
         # computations
-        product_waste_cost = cost_price * unsold_quantity
-        total_waste_cost += product_waste_cost
-        
         total_cost_price_per_line = (cost_price * quantity)
         total_cost_price += total_cost_price_per_line
         
         line_total = item.product.selling_price * quantity
         total_revenue += line_total
         
-        net_profit = ((total_revenue - total_cost_price) - total_waste_cost) - total_salary_cost
-
         items.append({
             'id': item.product.id,
             'name': item.product.name,
@@ -436,10 +406,8 @@ def view_sale_summary(request, sale_id):
 
     context = {
         'items': items, 
-        'net_profit': net_profit,
         'sale': sale, 
         'total_cost_price': total_cost_price, 
-        'total_waste_cost': total_waste_cost, 
         'total_revenue': total_revenue, 
         'total_salary_cost': total_salary_cost, 
         'section': 'sale'

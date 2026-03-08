@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('date', models.DateField(auto_now_add=True, db_index=True)),
-                ('total_cost', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True)),
+                ('total_revenue', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True)),
                 ('line_count', models.PositiveIntegerField(default=0)),
                 ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='sales', to=settings.AUTH_USER_MODEL)),
             ],

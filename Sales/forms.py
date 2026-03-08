@@ -8,7 +8,7 @@ from Sales.models import Sale, SaleItem
 class SaleForm(ModelForm):
     class Meta:
         model = Sale
-        fields = ['total_cost']
+        fields = ['total_revenue']
         
 class SaleFilterForm(forms.Form):
     start_date = forms.DateField(required=False)
