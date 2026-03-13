@@ -10,6 +10,8 @@ from Expense.models import Employee
 
 from decimal import Decimal
 
+from django.utils import timezone
+
 from core.models import TimeStampModel
 from django.core.exceptions import ValidationError
 
@@ -27,7 +29,9 @@ class Sale(TimeStampModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sales', null=True, blank=True)
     date = models.DateField(auto_now_add=True, db_index=True)
     total_revenue = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    total_salary_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     line_count = models.PositiveIntegerField(default=0)
+    reference = models.CharField(max_length=255, null=True, blank=True)
     
     objects = SaleQuerySet.as_manager()
     
@@ -36,6 +40,14 @@ class Sale(TimeStampModel):
     
     def quantity_item(self):
         return sum(item.quantity for item in self.sale_items.all())
+    
+    def save(self, *args, **kwargs):
+        if not self.reference:
+            year = timezone.now().year
+            count = Sale.objects.filter(date__year=year).count() + 1
+            self.reference = f"SI-{year}-{count:04d}"
+        
+        super().save(*args, **kwargs)
         
 class SaleItem(models.Model):
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name='sale_items', null=True, blank=True)
@@ -69,6 +81,9 @@ class SaleItem(models.Model):
     def total_sold_per_item(self):
         return self.price_at_sale * self.quantity
     
+    @property
+    def net_sale_value(self):
+        return (self.total_sold_per_item) - self.unsold_product_cost
     
     
 class SaleEmployee(TimeStampModel):

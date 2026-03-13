@@ -1,0 +1,246 @@
+{% extends 'main.html' %}
+{% load humanize %}
+{% block content %}
+
+<div class="page-wrapper">
+
+  <!-- PAGE HEADER -->
+  <div class="sd-page-header">
+    <div>
+      <h4 class="sd-page-title">
+        <i class="bi bi-calendar2-check"></i>
+        Summary Detail
+      </h4>
+      <p class="sd-page-breadcrumb">
+        Summary<span>•</span>Daily Breakdown
+        {% if sales %}
+          <span>|</span>{{ sales.first.date|date:"F d, Y" }}
+        {% endif %}
+      </p>
+    </div>
+    <div>
+      <a href="{% url 'view-summary' %}" class="btn btn-light btn-sm">
+        <i class="bi bi-arrow-left sl-me-1"></i> Back to summary
+      </a>
+    </div>
+  </div>
+
+  <div class="two-col-layout">
+
+    <!-- ========== LEFT PANEL ========== -->
+    <div class="left-panel">
+
+      <!-- SALES TRANSACTIONS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="sd-card-header-left">
+            <div class="sd-header-icon">
+              <i class="bi bi-receipt"></i>
+            </div>
+            <div>
+              <p class="card-header-title">Sales Transactions</p>
+              <p class="card-header-sub">{{ sales|length }} transaction{{ sales|length|pluralize }} this day</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+
+          <!-- SALE ITEMS TABLE -->
+          <div class="sd-section-label">Product Breakdown</div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th class="sl-text-center">Sold Qty</th>
+                  <th class="sl-text-center">Waste Qty</th>
+                  <th class="sl-text-center">Unit Cost</th>
+                  <th class="sl-text-center">Unit Price</th>
+                  <th class="sl-text-end">Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in sale_items %}
+                <tr>
+                  <td>
+                    <div class="cell-primary">{{ item.product.name|capfirst|default:"—" }}</div>
+                    <div class="cell-sub">#{{ item.product.id|default:"—" }}</div>
+                  </td>
+                  <td class="sl-text-center">{{ item.quantity|intcomma }}</td>
+                  <td class="sl-text-center">
+                    {% if item.unsold_quantity %}
+                      <span style="color: var(--danger);">{{ item.unsold_quantity|intcomma }}</span>
+                    {% else %}
+                      <span class="cell-sub">0</span>
+                    {% endif %}
+                  <td class="sl-text-center">₱{{ item.cost_price|floatformat:2|intcomma }}</td>
+                  <td class="sl-text-center">₱{{ item.price_at_sale|floatformat:2|intcomma }}</td>
+                   <td class="sl-text-end sl-fw-semibold">
+                    ₱{{ item.net_sale_value|floatformat:2|intcomma }}
+                  </td>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr class="sl-empty-row">
+                  <td colspan="5">No sale items found for this day.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- EMPLOYEES -->
+          {% if sale_employees %}
+          <hr class="sd-section-divider" style="margin-top: 1.25rem;">
+          <div class="sd-section-label">
+            <i class="bi bi-people-fill sl-me-1" style="color:#0d6efd;"></i>
+            Staff on Shift
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Employee</th>
+                  <th class="sl-text-end">Daily Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for emp in sale_employees %}
+                <tr>
+                  <td>
+                    <div class="cell-primary">{{ emp.employee.name|capfirst }}</div>
+                  </td>
+                  <td class="sl-text-end sl-fw-semibold">
+                    ₱{{ emp.employee.daily_rate|floatformat:2|intcomma }}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr class="sl-empty-row">
+                  <td colspan="2">No employees recorded for this day.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+      <!-- PURCHASES -->
+      <div class="card">
+        <div class="card-header">
+          <div class="sd-card-header-left">
+            <div class="sd-header-icon" style="background: rgba(212,129,26,0.1); color: var(--warning);">
+              <i class="bi bi-box-seam"></i>
+            </div>
+            <div>
+              <p class="card-header-title">Purchase Breakdown</p>
+              <p class="card-header-sub">{{ purchases|length }} purchase{{ purchases|length|pluralize }} this day</p>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th class="sl-text-center">Quantity</th>
+                  <th class="sl-text-end">Material Cost</th>
+                  <th class="sl-text-end">Discount</th>
+                  <th class="sl-text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in purchase_items %}
+                <tr>
+                  <td>
+                    <div class="cell-primary">{{ item.material.name|capfirst|default:"—" }}</div>
+                  </td>
+                  <td class="sl-text-center">{{ item.quantity|intcomma }}</td>
+                  <td class="sl-text-end sl-fw-semibold">₱{{ item.material.price|floatformat:2|intcomma }}</td>
+                  <td class="sl-text-end sl-fw-semibold">₱{{ item.discount|floatformat:2|intcomma }}</td>
+                  <td class="sl-text-end sl-fw-semibold">₱{{ item.total_item_discount|floatformat:2|intcomma }}</td>
+                </tr>
+                {% empty %}
+                <tr class="sl-empty-row">
+                  <td colspan="3">No purchases recorded for this day.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========== RIGHT PANEL ========== -->
+    <div class="right-panel">
+
+      <!-- DAY SUMMARY -->
+      <div class="card">
+        <div class="card-header dark">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <i class="bi bi-graph-up-arrow"></i>
+            <span style="font-weight:600; font-size:0.9rem;">Day Summary</span>
+          </div>
+          {% if sales %}
+          <span style="font-size:0.75rem; color:rgba(255,255,255,0.5);">{{ sales.first.date|date:"M d, Y" }}</span>
+          {% endif %}
+        </div>
+        <div class="card-body" style="display:flex; flex-direction:column; gap:0.75rem;">
+
+          <div class="sd-summary-block highlight">
+            <div class="sd-summary-block-label">Net Profit</div>
+            <div class="sd-total-amount">
+              ₱{{ net_profit|intcomma|floatformat:2 }}
+            </div>
+          </div>
+
+          <div class="sd-summary-block">
+            <div class="sd-summary-block-label">Transactions</div>
+            <div class="sd-info-row">
+              <span class="sd-info-label">Total Sales</span>
+              <span class="sd-info-value">{{ sales|length }}</span>
+            </div>
+            <div class="sd-info-row">
+              <span class="sd-info-label">Total Purchases</span>
+              <span class="sd-info-value">{{ purchases|length }}</span>
+            </div>
+            <div class="sd-info-row">
+              <span class="sd-info-label">Staff on shift</span>
+              <span class="sd-info-value">{{ sale_employees|length }}</span>
+            </div>
+          </div>
+
+          <div class="sd-summary-block">
+            <div class="sd-summary-block-label">Actions</div>
+            <div class="btn-grid">
+              <a href="{% url 'view-sale' %}" class="btn btn-sm btn-outline-primary btn-block">
+                <i class="bi bi-plus-circle sl-me-1"></i> New sale
+              </a>
+              <a href="{% url 'view-cart' %}" class="btn btn-sm btn-outline-primary btn-block">
+                <i class="bi bi-plus-circle sl-me-1"></i> New purchase
+              </a>
+            </div>
+          </div>
+
+          <div class="sd-note-box">
+            <div class="sd-note-icon"><i class="bi bi-info-circle"></i></div>
+            <div>
+              <div class="sd-note-title">Note</div>
+              <div class="sd-note-text">This is a read-only daily breakdown. All figures are aggregated from individual transactions.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+{% endblock content %}

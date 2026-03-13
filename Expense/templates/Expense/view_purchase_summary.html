@@ -39,7 +39,7 @@
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-basket3 text-primary"></i>
-            <h6 class="mb-0 fw-semibold">Purchased Items</h6>
+            <h6 class="mb-0 fw-semibold">Supplier Items</h6>
           </div>
           <span class="badge bg-secondary-subtle text-secondary">
             {{ cart_items|length }} line{{ cart_items|length|pluralize }}
@@ -64,8 +64,8 @@
                   <td class="fw-semibold">{{ item.name }}</td>
                   <td class="text-center">{{ item.quantity }}</td>
                   <td class="text-end">₱{{ item.price|floatformat:2 }}</td>
-                  <td class="text-end">₱{{ item.discount|floatformat:2 }}</td>
-                  <td class="text-end fw-semibold text-success">
+                  <td class="text-end fw-semibold text-success">₱{{ item.discount|floatformat:2 }}</td>
+                  <td class="text-end">
                     ₱{{ item.item_discount|floatformat:2 }}
                   </td>
                 </tr>
@@ -85,7 +85,7 @@
             <div class="d-flex flex-column gap-1">
               <div class="d-flex justify-content-between">
                 <span class="text-muted">
-                  <i class="bi bi-calculator me-1 text-primary"></i>
+                  <i class="bi bi-calculator me-1"></i>
                   Subtotal
                 </span>
                 <span class="fw-semibold">₱{{ subtotal|floatformat:2 }}</span>
@@ -97,7 +97,7 @@
                   <i class="bi bi-percent me-1 text-success"></i>
                   Total discount
                 </span>
-                <span class="fw-semibold text-danger">₱{{ total_discount|floatformat:2 }}</span>
+                <span class="fw-semibold text-success">₱{{ total_discount|floatformat:2 }}</span>
               </div>
               {% endif %}
 
@@ -107,7 +107,7 @@
                   <i class="bi bi-cash-stack me-1 text-danger"></i>
                   Total paid
                 </span>
-                <span class="fs-4 fw-bold text-success">
+                <span class="fs-4 fw-bold text-danger">
                   ₱{{ total_cost|floatformat:2 }}
                 </span>
               </div>

@@ -313,7 +313,7 @@ function stepDiscount(id, delta) {
                 <div class="text-muted">
                   {{ item.quantity }} × ₱{{ item.price|floatformat:2 }}
                   {% if item.discount %}
-                    <span class="text-danger">(-{{ item.discount }})</span>
+                    <span class="text-success">(-{{ item.discount }})</span>
                   {% endif %}
                 </div>
               </div>
@@ -324,7 +324,7 @@ function stepDiscount(id, delta) {
 
           <div class="d-flex justify-content-between mb-1">
             <span class="text-muted">
-              <i class="bi bi-calculator me-1 text-primary"></i>
+              <i class="bi bi-calculator me-1 "></i>
               Subtotal
             </span>
             <span class="fw-semibold">₱{{ subtotal|floatformat:2 }}</span>
@@ -335,7 +335,7 @@ function stepDiscount(id, delta) {
               <i class="bi bi-percent me-1 text-success"></i>
               Total Discount
             </span>
-            <span class="fw-semibold text-danger">₱{{ total_discount|floatformat:2 }}</span>
+            <span class="fw-semibold text-success">₱{{ total_discount|floatformat:2 }}</span>
             {% endif %}
           </div>
           <hr class="my-2">
@@ -344,7 +344,7 @@ function stepDiscount(id, delta) {
             <i class="bi bi-cash-stack me-1 text-danger"></i>
               Total Cost
             </span>
-            <span class="fs-5 fw-bold text-success">₱{{ total_after_discount|floatformat:2 }}</span>
+            <span class="fs-5 fw-bold text-danger">₱{{ total_after_discount|floatformat:2 }}</span>
           </div>
 
           <div class="d-grid gap-2">

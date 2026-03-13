@@ -72,10 +72,17 @@ document.addEventListener("DOMContentLoaded", function () {
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
     <div>
       <h4 class="fw-semibold mb-1 d-flex align-items-center gap-2">
-        <i class="bi-shop-window text-primary"></i>
-        Local Market
+        <i class="bi bi-building text-primary"></i>
+        Supplier
       </h4>
-      <small class="text-muted">Record your daily market purchases.</small>
+      <small class="text-muted">Record your daily supplier purchases.</small>
+    </div>
+    <!-- NEW: Create Purchase Record button -->
+    <div class="mb-2 mb-lg-0">
+      <a href="{% url 'view-cart' %}" class="btn btn-success btn-sm">
+        <i class="bi bi-file-text me-1"></i>
+          View Purchase Record
+      </a>
     </div>
   </div>
 
@@ -97,7 +104,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   type="search"
                   name="search"
                   class="form-control border-start-0"
-                  placeholder="Search materials..."
+                  placeholder="Search material name..."
                   value="{{ request.GET.search|default:'' }}"
                 >
               </div>
@@ -128,9 +135,9 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="card-header bg-white border-bottom px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
             <span class="badge text-bg-primary rounded-pill">{{ page_obj.paginator.count }}</span>
-            <h6 class="mb-0 fw-semibold">Material List</h6>
+            <h6 class="mb-0 fw-semibold">Supplier Items</h6>
           </div>
-          <small class="text-muted d-none d-sm-inline">Add items you bought from the market.</small>
+          <small class="text-muted d-none d-sm-inline">Add items you bought from the supplier.</small>
         </div>
 
         <div class="table-responsive">
@@ -236,9 +243,9 @@ document.addEventListener("DOMContentLoaded", function () {
         <div class="card-header bg-dark text-white px-3 px-lg-4 py-2 py-lg-3 d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-basket2-fill"></i>
-            <h6 class="mb-0 fw-semibold">Market Cart</h6>
+            <h6 class="mb-0 fw-semibold">Supplier Cart</h6>
           </div>
-          <small class="text-white-50 d-none d-sm-inline">Today's market run</small>
+          <small class="text-white-50 d-none d-sm-inline">Today's purchase</small>
         </div>
 
         <div class="card-body px-3 px-lg-4 py-3 small d-flex flex-column gap-3">
@@ -293,10 +300,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 <i class="bi bi-plus-circle me-1"></i>
                 Add material
               </a>
-              <a href="{% url 'view-cart' %}" class="btn btn-sm btn-success">
-                <i class="bi bi-clipboard-check me-1"></i>
-                View Purchase Record
-              </a>
               <a href="{% url 'category-list' %}?category_type=material" class="btn btn-sm btn-outline-info">
                 <i class="bi-kanban"></i>
                 Material's category
@@ -308,7 +311,7 @@ document.addEventListener("DOMContentLoaded", function () {
               {% if cart_items %}
               <a href="{% url 'clear-cart' %}" class="btn btn-sm btn-outline-danger">
                 <i class="bi bi-trash3 me-1"></i>
-                Clear Cart
+                Clear supplier items
               </a>
               {% endif %}
             </div>

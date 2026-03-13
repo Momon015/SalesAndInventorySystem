@@ -37,7 +37,7 @@ class Purchase(TimeStampModel):
     is_paid = models.BooleanField(default=False)
     line_count = models.PositiveIntegerField(default=0)
     purchase_date = models.DateField(auto_now_add=True, null=True, db_index=True) # remove NULL when you reset the DB
-    
+    reference = models.CharField(max_length=255, null=True, blank=True)
     # save the custom queryset as_manager()
     objects = PurchaseQuerySet.as_manager()
     
@@ -47,6 +47,11 @@ class Purchase(TimeStampModel):
     def save(self, *args, **kwargs):
         if self.status and self.status.slug == 'paid':
             self.is_paid = True
+            
+        if not self.reference:
+            year = timezone.now().year
+            count = Purchase.objects.filter(purchase_date__year=year).count() + 1
+            self.reference = f"PO-{year}-{count:04d}"
             
         # if not self.slug and self.status:
         #     self.slug = self.status.slug

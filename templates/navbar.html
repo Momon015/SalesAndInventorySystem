@@ -7,9 +7,11 @@
         <i class="bi bi-graph-up-arrow"></i>
       </div>
       <div class="pos-brand__text">
-        <span class="pos-brand__name">Sale & Inventory</span>
-        <span class="pos-brand__sub">POS | Point of Sale</span>
+      <div class="pos-brand__name">
+        Swift <span class="pos-brand__badge">ERP</span>
       </div>
+        <span class="pos-brand__underline">Enterprise Resource Planning</span>
+</div>
     </a>
 
     <!-- Mobile toggler -->
@@ -41,23 +43,16 @@
         </li>
 
         <li class="nav-item pos-nav__item">
+          <a class="pos-nav__link {% if section == 'summary' %}is-active{% endif %}" href="{% url 'view-summary' %}">
+            <i class="bi bi-calendar-check"></i>
+            <span>Summary</span>
+          </a>
+        </li>
+
+        <li class="nav-item pos-nav__item">
           <a class="pos-nav__link {% if section == 'sale' %}is-active{% endif %}" href="{% url 'sale-list' %}">
             <i class="bi bi-cash-coin"></i>
             <span>Sales</span>
-          </a>
-        </li>
-
-        <li class="nav-item pos-nav__item">
-          <a class="pos-nav__link {% if section == 'product' %}is-active{% endif %}" href="{% url 'product-list' %}">
-            <i class="bi bi-basket"></i>
-            <span>Products</span>
-          </a>
-        </li>
-
-        <li class="nav-item pos-nav__item">
-          <a class="pos-nav__link {% if section == 'material' %}is-active{% endif %}" href="{% url 'material-list' %}">
-            <i class="bi bi-shop"></i>
-            <span>Market</span>
           </a>
         </li>
 
@@ -76,16 +71,32 @@
         </li>
 
         <li class="nav-item pos-nav__item">
-          <a class="pos-nav__link {% if section == 'employee' %}is-active{% endif %}" href="{% url 'employee-list' %}">
-            <i class="bi bi-people"></i>
-            <span>Employees</span>
+          <a class="pos-nav__link {% if section == 'product' %}is-active{% endif %}" href="{% url 'product-list' %}">
+            <i class="bi bi-basket"></i>
+            <span>Products</span>
           </a>
         </li>
 
         <li class="nav-item pos-nav__item">
-          <a class="pos-nav__link {% if section == 'summary' %}is-active{% endif %}" href="#">
-            <i class="bi bi-calendar-check"></i>
-            <span>Summary</span>
+          <a class="pos-nav__link {% if section == 'inventory' %}is-active{% endif %}" href="{% url 'material-list' %}">
+            <i class="bi bi-box"></i>
+            <span>Inventory</span>
+          </a>
+        </li>
+
+        <li class="nav-item pos-nav__item">
+          <a class="pos-nav__link {% if section == 'material' %}is-active{% endif %}" href="{% url 'material-list' %}">
+            <i class="bi bi-building"></i>
+            <span>Supplier</span>
+          </a>
+        </li>
+
+
+
+        <li class="nav-item pos-nav__item">
+          <a class="pos-nav__link {% if section == 'employee' %}is-active{% endif %}" href="{% url 'employee-list' %}">
+            <i class="bi bi-people"></i>
+            <span>Employees</span>
           </a>
         </li>
 
